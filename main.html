@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Wordle Game</title>
+  </head>
+  <body style="background-color: #81ac96;">
+    <div class="popup-container" id="popupContainer">
+      <div class="popup-content">
+        <p>Welcome to Wordle!</p>
+        <button id="Play">Play!</button>
+      </div>
+    </div>
+    <div class="wordle-container">
+      <h1>Wordle Game</h1>
+      <p>Guess the 5-letter word:</p>
+      <div>
+        <input type="text" id="word-input" maxlength="5" />
+        <button id="guess-btn">Guess</button>
+      </div>
+      <p id="result"></p>
+      <div id="board">
+        <div class="row">
+          <div id="square1row1" class="square"></div>
+          <div id="square2row1" class="square"></div>
+          <div id="square3row1" class="square"></div>
+          <div id="square4row1" class="square"></div>
+          <div id="square5row1"class="square"></div>
+        </div>
+        <div class="row">
+          <div id="square1row2" class="square"></div>
+          <div id="square2row2" class="square"></div>
+          <div id="square3row2" class="square"></div>
+          <div id="square4row2" class="square"></div>
+          <div id="square5row2"class="square"></div>
+        </div>
+        <div class="row">
+          <div id="square1row3" class="square"></div>
+          <div id="square2row3" class="square"></div>
+          <div id="square3row3" class="square"></div>
+          <div id="square4row3" class="square"></div>
+          <div id="square5row3" class="square"></div>
+        </div>
+        <div class="row">
+          <div id="square1row4" class="square"></div>
+          <div id="square2row4" class="square"></div>
+          <div id="square3row4" class="square"></div>
+          <div id="square4row4" class="square"></div>
+          <div id="square5row4" class="square"></div>
+        </div>
+        <div class="row">
+          <div id="square1row5" class="square"></div>
+          <div id="square2row5" class="square"></div>
+          <div id="square3row5" class="square"></div>
+          <div id="square4row5" class="square"></div>
+          <div id="square5row5" class="square"></div>
+        </div>
+      </div>
+    </div>
+    <div class="animated-box"></div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
