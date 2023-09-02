@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { RegisterAPI } from "../api/AuthAPI";
+import { LoginAPI } from "../api/AuthAPI";
 import "../Sass/LoginComponent.scss";
 import Logo from "../assets/cross1.png";
+import { Link } from "react-router-dom";
 
 //login component
 export default function LoginComponent() {
@@ -9,7 +10,7 @@ export default function LoginComponent() {
   const [credentials, setCredentials] = useState({});
   const login = async () => {
     try {
-      let res = await RegisterAPI(credentials.email, credentials.password);
+      let res = await LoginAPI(credentials.email, credentials.password);
       console.log(res?.user);
     } catch (err) {
       console.log(err);
@@ -39,8 +40,13 @@ export default function LoginComponent() {
           placeholder="Password"
         />
         <button onClick={login} className="login-btn">
-          Login{" "}
+          Log in{" "}
         </button>
+        <p className="subtext">New to the App create an account?</p>
+        <Link className="link" to="/signup">Create an account</Link>
+        <div className="test">
+          <div className="test2"></div>
+        </div>
       </div> 
     </div>
   );
