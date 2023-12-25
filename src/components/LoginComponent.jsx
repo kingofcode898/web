@@ -3,15 +3,24 @@ import { LoginAPI } from "../api/AuthAPI";
 import "../Sass/LoginComponent.scss";
 import Logo from "../assets/cross1.png";
 import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+
 
 //login component
 export default function LoginComponent() {
   //makes call to login function from API
   const [credentials, setCredentials] = useState({});
+  const navigate = useNavigate()
+
   const login = async () => {
     try {
       let res = await LoginAPI(credentials.email, credentials.password);
-      console.log(res?.user);
+      
+      if (res?.user) {
+        navigate('/Home');
+      } else {
+        console.log('Login failed');
+      }
     } catch (err) {
       console.log(err);
     }
@@ -30,6 +39,7 @@ export default function LoginComponent() {
             setCredentials({ ...credentials, email: event.target.value })
           }
           className="common-input"
+          id="email-login"
           placeholder="Email"
         />
         <input
@@ -37,6 +47,7 @@ export default function LoginComponent() {
             setCredentials({ ...credentials, password: event.target.value })
           }
           className="common-input"
+          id="password-login"
           placeholder="Password"
         />
         <button onClick={login} className="login-btn">
