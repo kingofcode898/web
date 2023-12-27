@@ -4,6 +4,7 @@ import Login from "../Pages/Login";
 import SignUp from "../Pages/SignUp";
 import Home from "../Pages/Home";
 
+
 export const router = createBrowserRouter([
     {
       path: "/",

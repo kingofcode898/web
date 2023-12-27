@@ -1,24 +1,25 @@
-// this will be the logic to authenticating users
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
-import {auth} from "../firebaseConfig"
+// AuthAPI.js
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, firestore } from '../firebaseConfig';
 
+export const RegisterAPI = async (email, password, username) => {
+  try {
+    const response = await createUserWithEmailAndPassword(auth, email, password);
 
-export const LoginAPI = (email, password) => {
-    try{
-        let response = signInWithEmailAndPassword(auth, email, password)
-        return response
-    }
-    catch(err){
-        return err
-    }
-}
+    if (response.user) {
+      // Store additional user data in Firestore
+      await firestore.collection('users').doc(response.user.uid).set({
+        email: response.user.email,
+        username: username,
+        password: response.user.password
+      });
 
-export const RegisterAPI = (email, password) => {
-    try{
-        let response = createUserWithEmailAndPassword(auth, email, password)
-        return response
+      return response;
     }
-    catch(err){
-        return err
-    }
-}
+
+    return null; // or handle the case when the user is not present
+  } catch (err) {
+    console.error(err);
+    return err;
+  }
+};

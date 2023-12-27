@@ -1,30 +1,19 @@
 import React, { useState } from 'react';
+import '../Sass/CreatePost.scss';
 
-const CreatePost = ({ onSubmit }) => {
-  const [author, setAuthor] = useState('');
+const CreatePost = ({ onSubmit, onClose }) => {
   const [content, setContent] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ author, content });
+    onSubmit({ content });
     // Reset form fields
-    setAuthor('');
     setContent('');
   };
 
   return (
-    <div className="create-post">
-      <h2>Create a New Post</h2>
+    <div className='window'>
       <form onSubmit={handleSubmit}>
-        <label>
-          Author:
-          <input
-            type="text"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            required
-          />
-        </label>
         <label>
           Content:
           <textarea
@@ -33,7 +22,10 @@ const CreatePost = ({ onSubmit }) => {
             required
           />
         </label>
-        <button type="submit">Create Post</button>
+        <div>
+          <button type="submit">Create Post</button>
+          <button type="button" onClick={onClose}>Close</button>
+        </div>
       </form>
     </div>
   );

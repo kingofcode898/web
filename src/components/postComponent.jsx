@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import '../Sass/Post.scss'; 
 
 const Post = ({ author, content }) => {
   const [likes, setLikes] = useState(0);

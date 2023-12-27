@@ -12,6 +12,7 @@ export default function LoginComponent() {
   const [credentials, setCredentials] = useState({});
   const navigate = useNavigate()
 
+  //login API call
   const login = async () => {
     try {
       let res = await LoginAPI(credentials.email, credentials.password);
