@@ -1,0 +1,25 @@
+$navbar-background: #83b1c0;
+$navbar-text-color: #fff;
+$navbar-padding: 10px;
+$nav-item-margin: 0 10px;
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  background-color: $navbar-background;
+  padding: $navbar-padding;
+  color: $navbar-text-color;
+
+  .navItem {
+    margin: $nav-item-margin;
+
+    a {
+      color: $navbar-text-color;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

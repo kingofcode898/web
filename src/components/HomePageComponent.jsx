@@ -1,16 +1,28 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Post from './postComponent';
 import CreatePost from './createPostComponent';
-import { useUser } from '../userContext'
+import Navbar from './NavbarComponent';
+import { getUserDocument } from '../api/DataBaseAPI';
+import { UserContext } from '../userContext';
 
 const HomePageComponent = () => {
   const [posts, setPosts] = useState([]);
   const [isCreatePostVisible, setIsCreatePostVisible] = useState(false);
-  const { user } = useUser(); // Assuming the user context provides user information
+  const userID = useContext(UserContext); 
+  
+  const getUsername = async () => {
+    const userInfo = await getUserDocument(userID[0]);
+    console.log(userInfo)
+    const username = userInfo.username; 
+    return username
+  }
+  
 
-  const handleCreatePost = (post) => {
+  const handleCreatePost = async (post) => {
     // Append the author information to the post before adding it to the state
-    const postWithAuthor = { ...post, author: user };
+    const username = await getUsername(); 
+    const postWithAuthor = { ...post, author: username };
+    console.log(username)
     setPosts([...posts, postWithAuthor]);
     // Hide the CreatePost component
     setIsCreatePostVisible(false);
@@ -22,7 +34,9 @@ const HomePageComponent = () => {
   };
 
   return (
+    
     <div className="home-page">
+      <Navbar/>
       <button onClick={handleCreatePostToggle}>Create Post</button>
 
       {/* Show CreatePost component only if isCreatePostVisible is true */}

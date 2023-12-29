@@ -1,16 +1,15 @@
 // App.jsx
-import React from 'react';
-import { RouterProvider } from 'react-router-dom';
-import { UserProvider } from './userContext';
+import React, { useState } from 'react';
+import { RouterProvider} from 'react-router-dom';
+import { UserContext } from './userContext';
 import { router } from './Routes';
 
 const App = () => {
-  const history = createBrowserHistory();
-
+    const [UserID, setUserID] = useState('')
   return (
-    <UserProvider>
-      <RouterProvider router={router} history={history}></RouterProvider>
-    </UserProvider>
+    <UserContext.Provider value={[UserID, setUserID]}>
+      <RouterProvider router={router} ></RouterProvider>
+    </UserContext.Provider>
   );
 };
 
