@@ -1,6 +1,6 @@
 // AuthAPI.js
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, firestore } from '../firebaseConfig';
+import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export const RegisterAPI = async (email, password) => {

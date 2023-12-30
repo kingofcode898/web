@@ -5,9 +5,9 @@ import { UserContext } from './userContext';
 import { router } from './Routes';
 
 const App = () => {
-    const [UserID, setUserID] = useState('')
+    const [CurrentUser, setCurrentUser] = useState({})
   return (
-    <UserContext.Provider value={[UserID, setUserID]}>
+    <UserContext.Provider value={[CurrentUser, setCurrentUser]}>
       <RouterProvider router={router} ></RouterProvider>
     </UserContext.Provider>
   );

@@ -1,8 +1,72 @@
-.post{
-    width: 50vw;
-    height: 30vh; 
-    background-color: grey;
+// Assuming you have a container for your posts
+.post-container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .post {
+    border: 1px solid #ddd;
+    margin-top: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .post-header {
     display: flex;
-    
-    
-}
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .post-header p {
+    margin: 0;
+    font-weight: bold;
+  }
+  
+  .post-content {
+    padding: 16px;
+  }
+  
+  .post-actions {
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .post-actions button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #385185;
+  }
+  
+  .post-comments {
+    padding: 16px;
+  }
+  
+  .post-comments h4 {
+    margin-bottom: 8px;
+  }
+  
+  .post-comments ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .post-comments li {
+    margin-bottom: 8px;
+  }
+  
+  .post-comments input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  // Style the input placeholder text
+  .post-comments input::placeholder {
+    color: #bbb;
+  }
+  

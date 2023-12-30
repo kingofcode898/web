@@ -8,19 +8,12 @@ import { UserContext } from '../userContext';
 const HomePageComponent = () => {
   const [posts, setPosts] = useState([]);
   const [isCreatePostVisible, setIsCreatePostVisible] = useState(false);
-  const userID = useContext(UserContext); 
-  
-  const getUsername = async () => {
-    const userInfo = await getUserDocument(userID[0]);
-    console.log(userInfo)
-    const username = userInfo.username; 
-    return username
-  }
+  const [CurrentUser, setCurrentUser] = useContext(UserContext); 
   
 
-  const handleCreatePost = async (post) => {
+  const handleCreatePost =  (post) => {
     // Append the author information to the post before adding it to the state
-    const username = await getUsername(); 
+    const username = CurrentUser.username; 
     const postWithAuthor = { ...post, author: username };
     console.log(username)
     setPosts([...posts, postWithAuthor]);
@@ -44,9 +37,12 @@ const HomePageComponent = () => {
         <CreatePost onSubmit={handleCreatePost} onClose={handleCreatePostToggle} />
       )}
 
-      {posts.map((post, index) => (
-        <Post key={index} author={post.author} content={post.content} />
-      ))}
+      <div className='post-container'>
+        {posts.map((post, index) => (
+          <Post key={index} author={post.author} content={post.content} />
+        ))}
+      </div>
+      
     </div>
   );
 };

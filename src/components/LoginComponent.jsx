@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { LoginAPI } from "../api/AuthAPI";
 import "../Sass/LoginComponent.scss";
 import Logo from "../assets/cross1.png";
 import { Link } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from "../userContext";
+import { findUser } from "../api/DataBaseAPI";
 
 
 //login component
@@ -11,12 +13,25 @@ export default function LoginComponent() {
   //makes call to login function from API
   const [credentials, setCredentials] = useState({});
   const navigate = useNavigate()
-
+  const [CurrentUser, setCurrentUser] = useContext(UserContext)
   //login API call
   const login = async () => {
     try {
       let res = await LoginAPI(credentials.email, credentials.password);
       
+      const user = await findUser(credentials.email);
+      const userData = user[1]
+      const userid = user[0]
+
+      setCurrentUser({
+          ID: userid,
+          email: credentials.email,
+          password: credentials.password,
+          username: userData.username,  
+          followers: userData.followers,
+      })
+
+
       if (res?.user) {
         navigate('/Home');
       } else {

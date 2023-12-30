@@ -10,25 +10,16 @@ function SignupComponent() {
   // stores all credentials from the input;
   const [credentials, setCredentials] = useState({});
   const navigate = useNavigate();
-  const [UserID, setUserID] = useContext(UserContext);
-
-  useEffect(() => {
-    // This effect will run whenever UserID changes
-    console.log(`User ID success! This is the ID ${UserID}`);
-    
-    // Navigates to home page if the ID was set
-    if (UserID) {
-      navigate("/home");
-    }
-  }, [UserID]);
+  const [CurrentUser, setCurrentUser] = useContext(UserContext);
 
   const SignUp = async () => {
     try {
       let res = await RegisterAPI(credentials.email, credentials.password);
       console.log(res?.user);
 
-      // If registration was good
+      //IF they dont already exist.
       if (res?.user) {
+        
         // Get the path to the file that contains user info
         const ID = await addUserDb(
           credentials.username,
@@ -37,13 +28,23 @@ function SignupComponent() {
         );
 
         console.log(ID.id);
-        setUserID(ID.id);
+        
+        //makes the new signed up user the current user for the app
+        setCurrentUser({
+          ID: ID.id,
+          email: credentials.email,
+          password: credentials.password,
+          username: credentials.username,
+          followers: 0,
+          following: 0,
+        });
+
+        navigate("/home")
       }
     } catch (err) {
       console.log(err);
     }
   };
-
 
   return (
     <div className="login-wrapper">
