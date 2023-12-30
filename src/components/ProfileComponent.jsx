@@ -6,7 +6,7 @@ import Navbar from './NavbarComponent'
 function ProfileComponent() {
   const [CurrentUser, setCurrentUser] = useContext(UserContext)
 
-  
+  console.log(CurrentUser)
   return (
     <div>
       <Navbar/> 

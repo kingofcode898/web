@@ -23,6 +23,8 @@ export default function LoginComponent() {
       const userData = user[1]
       const userid = user[0]
 
+      console.log(userData)
+      
       setCurrentUser({
           ID: userid,
           email: credentials.email,
