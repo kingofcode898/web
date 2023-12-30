@@ -2,8 +2,8 @@ import React, { useContext, useState } from 'react';
 import Post from './postComponent';
 import CreatePost from './createPostComponent';
 import Navbar from './NavbarComponent';
-import { getUserDocument } from '../api/DataBaseAPI';
 import { UserContext } from '../userContext';
+import "../Sass/Home.scss"
 
 const HomePageComponent = () => {
   const [posts, setPosts] = useState([]);
@@ -30,7 +30,7 @@ const HomePageComponent = () => {
     
     <div className="home-page">
       <Navbar/>
-      <button onClick={handleCreatePostToggle}>Create Post</button>
+      <button onClick={handleCreatePostToggle} className='new-post'>Create Post</button>
 
       {/* Show CreatePost component only if isCreatePostVisible is true */}
       {isCreatePostVisible && (
@@ -38,9 +38,9 @@ const HomePageComponent = () => {
       )}
 
       <div className='post-container'>
-        {posts.map((post, index) => (
-          <Post key={index} author={post.author} content={post.content} />
-        ))}
+      {posts.slice().reverse().map((post, index) => (
+        <Post key={index} author={post.author} content={post.content} />
+      ))}
       </div>
       
     </div>

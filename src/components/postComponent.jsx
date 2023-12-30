@@ -31,7 +31,7 @@ const Post = ({ author, content }) => {
         <h4>Comments:</h4>
         <ul>
           {comments.map((comment, index) => (
-            <li key={index}>{comment}</li>
+            <li key={index} className='comment'>{comment}</li>
           ))}
         </ul>
         <input

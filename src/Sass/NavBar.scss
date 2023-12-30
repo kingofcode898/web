@@ -1,25 +1,28 @@
-$navbar-background: #83b1c0;
-$navbar-text-color: #fff;
-$navbar-padding: 10px;
-$nav-item-margin: 0 10px;
-
 .navbar {
   display: flex;
   justify-content: space-between;
-  background-color: $navbar-background;
-  padding: $navbar-padding;
-  color: $navbar-text-color;
-
+  align-items: center; /* Center items vertically */
+  background-color: #222; /* Dark background color */
+  color: #fff; /* Text color */
+  padding: 10px;
+  height: 50px; /* Adjusted height for more space */
+  
   .navItem {
-    margin: $nav-item-margin;
-
     a {
-      color: $navbar-text-color;
       text-decoration: none;
+      color: #fff;
+      font-weight: bold;
+      transition: color 0.3s ease;
 
       &:hover {
-        text-decoration: underline;
+        color: #4caf50; /* Green hover color */
       }
     }
+  }
+
+  .Logo {
+    width: 50px;
+    padding: 0;
+    margin: 0;
   }
 }

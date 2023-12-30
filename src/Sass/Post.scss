@@ -69,4 +69,20 @@
   .post-comments input::placeholder {
     color: #bbb;
   }
+  .comment {
+    list-style: none;
+    margin-bottom: 8px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  /* Optional: Add hover effect */
+  .comment:hover {
+    background-color: #f3f4f6;
+  }
   
