@@ -1,9 +1,9 @@
-import { addDoc, collection, getDoc, doc, query, where, getDocs,} from "firebase/firestore";
-import { firestore } from "../firebaseConfig";
+import { addDoc, collection, getDoc, doc, query, where, getDocs, } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'; // Import your Firebase Storage configuration
+import { firestore, storage} from "../firebaseConfig";
 
 // Import the user collection
 const userCollection = collection(firestore, "Users");
-
 // Adds user to the database
 export const addUserDb = async (username, email, password) => {
   try {
@@ -22,6 +22,50 @@ export const addUserDb = async (username, email, password) => {
     throw error;
   }
 };
+
+export const createPostinDB = async (author, content, imagepath = "") => {
+  try {
+    const docRef = await db
+      .collection("customers")
+      .doc(user.uid)
+      .collection("checkout_sessions")
+      .addDoc({
+        author: author,
+        content: content,
+        imagepath: imagepath,
+        created: Date.now(),
+      });
+
+    return docRef;
+  } catch (error) {
+    console.error('Error creating post in the database:', error.message);
+    throw error;
+  }
+};
+
+export const storePhoto = async (photo) => {
+    try {
+      // Create a storage reference with a unique name
+      const storageRef = ref(storage, `photos/${Date.now()}_${photo.name}`);
+  
+      // Upload the file
+      const uploadTask = uploadBytesResumable(storageRef, photo);
+  
+      // Get the download URL once the upload is complete
+      const snapshot = await uploadTask;
+      const downloadURL = await getDownloadURL(snapshot.ref);
+  
+      // You can use the downloadURL to save it in the database or use it as needed
+      console.log('File available at', downloadURL);
+  
+      return downloadURL;
+    } catch (error) {
+      console.error('Error uploading photo:', error.message);
+      throw error;
+    }
+  };
+  
+
 
 /*function that is called when a user logs in. It finds the document that has the same 
   the same email as the provided one in the login */
