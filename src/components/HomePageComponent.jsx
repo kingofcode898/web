@@ -13,9 +13,9 @@ const HomePageComponent = () => {
 
   const handleCreatePost = (post) => {
     // Generate a unique ID for the post
-    const postId = Date.now().toString();
+    const postId = CurrentUser.username + (CurrentUser.posts_created + 1)
     const username = CurrentUser.username;
-    const postWithAuthor = { ...post, id: postId, author: username, likes: 0, comments: [] };
+    const postWithAuthor = { ...post, id: postId, author: username, likes: 0, comments: [], timestamp:  Date.now().toString()};
     setPosts([...posts, postWithAuthor]);
     // Hide the CreatePost component
     setIsCreatePostVisible(false);

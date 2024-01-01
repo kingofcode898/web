@@ -4,32 +4,8 @@ import PropTypes from "prop-types";
 import "../Sass/Post.scss";
 import { useState } from "react";
 
-const Post = ({
-  author,
-  content,
-  likes,
-  comments,
-  onLike,
-  onComment,
-}) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const options = { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit', 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    second: '2-digit',
-    hour12: false // Use 24-hour format
-  };
-  
-  let timestamp = new Date().toLocaleString('en-US', options);
-  
-  
-  const handleLike = () => {
-    onLike();
-    setIsLiked(!isLiked);
-  };
+const Post = ({  author,  content,  likes,  comments,onLike, onComment,timestamp}) => 
+{
   return (
     <div className="post">
       <div className="post-header">
@@ -41,7 +17,7 @@ const Post = ({
       </div>
       <div className="post-like">
         <div class="toggle">
-          <input type="checkbox" id="heart-check" onClick={handleLike} />
+          <input type="checkbox" id="heart-check" onClick={onLike} />
           <label for="heart-check" id="heart">
             <svg
               viewBox="0 0 24 22"
