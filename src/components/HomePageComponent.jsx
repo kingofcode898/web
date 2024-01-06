@@ -1,25 +1,39 @@
 // HomePageComponent.jsx
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import Post from './postComponent';
 import CreatePost from './createPostComponent';
 import Navbar from './NavbarComponent';
 import { UserContext } from '../userContext';
 import "../Sass/Home.scss";
-import { createPostinDB } from '../api/DataBaseAPI';
+import { createPostinDB, getUserPosts } from '../api/DataBaseAPI';
 
 const HomePageComponent = () => {
   const [posts, setPosts] = useState([]);
   const [isCreatePostVisible, setIsCreatePostVisible] = useState(false);
   const [CurrentUser, setCurrentUser] = useContext(UserContext);
 
+  const displayPosts = async () => {
+    const postsFromDB = await getUserPosts("Users/" + CurrentUser.ID);
+
+    postsFromDB.forEach((post) => {
+      console.log(post);
+      setPosts([...posts, post]);
+      console.log(posts);
+    });
+  };
+
+  useEffect(() => {
+    displayPosts();
+  }, []);
+
   const handleCreatePost = (post) => {
     // Generate a unique ID for the post
-    const postId = CurrentUser.username + (CurrentUser.posts_created + 1)
+    const postID = CurrentUser.ID + (CurrentUser.posts_created + 1)
     const username = CurrentUser.username;
-    const postWithAuthor = { ...post, id: postId, author: username, likes: 0, comments: [], timestamp:  Date.now().toString()};
+    const postWithAuthor = { ...post, id: postID, author: username, likes: 0, comments: [], timestamp:  Date.now().toString()};
     setPosts([...posts, postWithAuthor]);
 
-    createPostinDB(CurrentUser.email, post.content ,postId)
+    createPostinDB(CurrentUser.email, post.content)
     setIsCreatePostVisible(false);
   };
 
@@ -49,6 +63,9 @@ const HomePageComponent = () => {
     setPosts(updatedPosts);
   };
 
+
+  
+
   return (
     <div className="home-page">
       <Navbar />
@@ -62,13 +79,12 @@ const HomePageComponent = () => {
       <div className='post-container'>
         {posts.slice().reverse().map((post, index) => (
           <Post
-            key={index}
             postId={post.id}
             author={post.author}
             content={post.content}
-            timestamp={post.timestamp}
+            timestamp={post.date_created}
             likes={post.likes}
-            comments={post.comments}
+            // comments={post.comments}
             onLike={() => handleLike(post.id)}
             onComment={(comment) => handleComment(post.id, comment)}
           />

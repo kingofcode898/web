@@ -2,9 +2,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import "../Sass/Post.scss";
-import { useState } from "react";
 
-const Post = ({  author,  content,  likes,  comments,onLike, onComment,timestamp}) => 
+const Post = ({  author,  content,  likes,  onLike, onComment,timestamp}) => 
 {
   return (
     <div className="post">
@@ -16,14 +15,14 @@ const Post = ({  author,  content,  likes,  comments,onLike, onComment,timestamp
         <p>{content}</p>
       </div>
       <div className="post-like">
-        <div class="toggle">
+        <div className="toggle">
           <input type="checkbox" id="heart-check" onClick={onLike} />
           <label for="heart-check" id="heart">
             <svg
               viewBox="0 0 24 22"
               version="1.1"
               xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlnsXlink="http://www.w3.org/1999/xlink"
             >
               <path
                 id="initial"
@@ -41,13 +40,14 @@ const Post = ({  author,  content,  likes,  comments,onLike, onComment,timestamp
       </div>
       <div className="post-comments">
         <h4>Comments:</h4>
-        <ul>
+        <p>Im working on it</p>
+        {/* <ul>
           {comments.map((comment, index) => (
             <li key={index} className="comment">
               {comment}
             </li>
           ))}
-        </ul>
+        </ul> */}
         <input
           type="text"
           placeholder="Add a comment..."
@@ -67,7 +67,6 @@ Post.propTypes = {
   author: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
   likes: PropTypes.number.isRequired,
-  comments: PropTypes.array.isRequired,
   onLike: PropTypes.func.isRequired,
   onComment: PropTypes.func.isRequired,
 };

@@ -29,49 +29,51 @@ export const addUserDb = async (username, email, password) => {
 };
 
 
-export const createPostinDB = async (userEmail, content, ID) => {
+export const createPostinDB = async (userEmail, content) => {
   try {
-    const userDoc = findUser(userEmail)
+    const userDoc = await findUser(userEmail)
     const userData = userDoc[1]
-    userDocPath  = userDoc[0]; 
-    doc = collection('users').doc(userDoc).collection("posts").addDoc({
+    const userPostPath  = "Users/" + userDoc[0] + "/Posts"; 
+    let date_created = new Date(Date.now());
+    let formatted_date = date_created.toLocaleString();
+
+    console.log(userPostPath)
+    const Post = await addDoc(collection(firestore, userPostPath), {
         author: userData.username,
-        id: (userData.posts_created + 1), 
-        date_created: Date.now().toString(),
+        id: (parseInt(userData.posts_created) + 1), 
+        date_created: formatted_date,
         content: content ,
         likes: 0
     })
-    console.log(userData.posts_created)
-    userData.posts_created += 1; 
+    updateDoc(doc(firestore,"Users/" + userDoc[0]), {
+      posts_created: parseInt(userData.posts_created) + 1
+    });
+    console.log("Post succesfully added to firestore database!");
 
-
-    return ;
+    return Post;
   } catch (error) {
     console.error('Error creating post in the database:', error.message);
     throw error;
   }
 };
 
-export const getPost = async (userEmail, ID) => {
-  try {
-      CurrentUserPosts = collection('users').doc(findUser(userEmail[0])).collection("posts")
-      const q = query(CurrentUserPosts,where("id", "==", ID) )
-      const Posts = getDocs(q)
 
-      if (!Posts.empty) {
-        // Since you're querying by email, there might be multiple documents matching the condition.
-        // If you expect only one, you can access the first document in the query snapshot.
-        const currentPost = Posts.docs[0];
-        console.log(JSON.stringify(userDoc.data()));
-        return [currentPost];
-      }
-    }
-      catch (error){
-        console.error('Error adding like to post in database:',error.message )
-        throw error;
-      }
-    }
-     
+export const addComment = async (userEmail, ID, comment) => {
+
+}
+
+export const getPost = async (UserID, ID) => {
+  try {
+      const CurrentUserPosts = "Users/" + UserID + "/Posts" + ID
+      const docRef = doc(firestore, CurrentUserPosts);
+
+      return docRef;
+
+  } catch (error) {
+    console.error('Error getting post:', error.message);
+    throw error;
+  }
+};
 
 
 export const addFollwing = async () =>{
@@ -154,20 +156,21 @@ export const getUserDocument = async (userID) => {
   }
 };
 
-export const getFirstThreeDocuments = async (collectionName) => {
+
+export const getUserPosts = async (userDocPath) => {
   try {
-    const collectionRef = collection(db, collectionName);
+    const collectionRef = collection(firestore, userDocPath + '/Posts');
     const querySnapshot = await getDocs(query(collectionRef));
 
-    const documents = [];
+    const posts = [];
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      documents.push({ id: doc.id, ...data });
+      posts.push({ ...data });
     });
 
-    return documents;
+    return posts;
   } catch (error) {
-    console.error('Error getting documents: ', error);
+    console.error('Error getting user posts: ', error);
     throw error;
   }
 };
