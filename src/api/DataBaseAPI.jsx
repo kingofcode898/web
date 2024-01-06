@@ -41,8 +41,9 @@ export const createPostinDB = async (userEmail, content, ID) => {
         content: content ,
         likes: 0
     })
-
+    console.log(userData.posts_created)
     userData.posts_created += 1; 
+
 
     return ;
   } catch (error) {
@@ -171,4 +172,3 @@ export const getFirstThreeDocuments = async (collectionName) => {
   }
 };
 
-updateDoc()

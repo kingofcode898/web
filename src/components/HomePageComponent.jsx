@@ -5,6 +5,7 @@ import CreatePost from './createPostComponent';
 import Navbar from './NavbarComponent';
 import { UserContext } from '../userContext';
 import "../Sass/Home.scss";
+import { createPostinDB } from '../api/DataBaseAPI';
 
 const HomePageComponent = () => {
   const [posts, setPosts] = useState([]);
@@ -17,12 +18,12 @@ const HomePageComponent = () => {
     const username = CurrentUser.username;
     const postWithAuthor = { ...post, id: postId, author: username, likes: 0, comments: [], timestamp:  Date.now().toString()};
     setPosts([...posts, postWithAuthor]);
-    // Hide the CreatePost component
+
+    createPostinDB(CurrentUser.email, post.content ,postId)
     setIsCreatePostVisible(false);
   };
 
   const handleCreatePostToggle = () => {
-    // Toggle the visibility of the CreatePost component
     setIsCreatePostVisible(!isCreatePostVisible);
   };
 
