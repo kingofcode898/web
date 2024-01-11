@@ -58,10 +58,6 @@ export const createPostinDB = async (userEmail, content) => {
 };
 
 
-export const addComment = async (userEmail, ID, comment) => {
-
-}
-
 export const getPost = async (UserID, ID) => {
   try {
       const CurrentUserPosts = "Users/" + UserID + "/Posts" + ID
@@ -76,15 +72,61 @@ export const getPost = async (UserID, ID) => {
 };
 
 
-export const addFollwing = async () =>{
-  //to do
+export const addFollwing = async (username) =>{
+  try {
+    const userDoc = await findUser(username)
+    const userData = userDoc[1]
+    const userDocPath = "Users/" + userDoc[0]
+    const userDocRef = doc(firestore, userDocPath);
+    const userDocData = await getDoc(userDocRef);
+    const userDocDataData = userDocData.data()
+    const userDocDataDataFollowing = userDocDataData.following
+
+    if (userDocDataDataFollowing[CurrentUser.username] == null){
+      updateDoc(doc(firestore,userDocPath), {
+        num_following: parseInt(userData.num_following) + 1,
+        following: {
+          ...userDocDataDataFollowing,
+          [CurrentUser.username]: CurrentUser.username
+        }
+      });
+     console.log("following added"); 
+    }
+  } catch (error) {
+    console.error('Error adding following:', error.message);
+    throw error;
+  }
 }
 
-export const addFollower = async () => {
-  //to do
+export const addFollower = async (follower) => {
+  try {
+    const userDoc = await findUser(follower)
+    const userData = userDoc[1]
+    const userDocPath = "Users/" + userDoc[0]
+    const userDocRef = doc(firestore, userDocPath);
+    const userDocData = await getDoc(userDocRef);
+    const userDocDataData = userDocData.data()
+    const userDocDataDataFollowers = userDocDataData.followers
+
+    if (userDocDataDataFollowers[CurrentUser.username] == null){
+      updateDoc(doc(firestore,userDocPath), {
+        num_followers: parseInt(userData.num_followers) + 1,
+        followers: {
+          ...userDocDataDataFollowers,
+          [CurrentUser.username]: CurrentUser.username
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error adding follower:', error.message);
+    throw error;
+  }
 }
 
-
+export const addComment = async (postPath, comment) => {
+  comment = addDoc(collection(firestore, postPath + '/Comments/'), comment);
+  return comment;
+}
 
 export const storePhoto = async (photo) => {
     try {
@@ -156,6 +198,9 @@ export const getUserDocument = async (userID) => {
   }
 };
 
+export const getUserWUsername = async (username) => {
+  
+}
 
 export const getUserPosts = async (userDocPath) => {
   try {

@@ -33,7 +33,6 @@ export default function LoginComponent() {
           followers: userData.followers,
       })
 
-
       if (res?.user) {
         navigate('/Home');
       } else {

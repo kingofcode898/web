@@ -26,6 +26,10 @@ const HomePageComponent = () => {
     displayPosts();
   }, []);
 
+  const loadPosts = async () => {
+    console.log("load posts");
+  }; 
+
   const handleCreatePost = (post) => {
     // Generate a unique ID for the post
     const postID = CurrentUser.ID + (CurrentUser.posts_created + 1)
@@ -53,13 +57,16 @@ const HomePageComponent = () => {
   };
 
   const handleComment = (postId, comment) => {
+    
     // Add a new comment to the specified post
     const updatedPosts = posts.map(post => {
       if (post.id === postId) {
         return { ...post, comments: [...post.comments, comment] };
       }
+      
       return post;
     });
+    
     setPosts(updatedPosts);
   };
 
@@ -90,7 +97,12 @@ const HomePageComponent = () => {
           />
         ))}
       </div>
+        <div className='load-posts'>
+          <button onClick={loadPosts}>Load More Posts</button>
+        </div>
+
     </div>
+    
   );
 };
 
