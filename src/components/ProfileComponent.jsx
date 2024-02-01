@@ -8,11 +8,16 @@ function ProfileComponent() {
 
   console.log(CurrentUser)
   return (
-    <div>
+    <>
       <Navbar/> 
-      <p className='Username-profile'>{CurrentUser.username}</p>
-      <p className='follower-count-profile'>{CurrentUser.followers}</p>
-    </div>
+      <div className='main-info'>
+        <p className='Username-profile'>{CurrentUser.username}</p>
+        <p className='follower-count-profile'>{CurrentUser.followers}</p>
+        <p className='bio-profile'>{CurrentUser.bio}</p>
+      </div>
+    <div className="User-posts">This will be the post box</div>
+    </>
+    
   )
 }
 
