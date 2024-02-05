@@ -14,19 +14,17 @@ const HomePageComponent = () => {
 
   const displayPosts = async () => {
     const postsFromDB = await getUserPosts("Users/" + CurrentUser.ID);
-
-    postsFromDB.forEach((post) => {
-      console.log(post);
-      setPosts([...posts, post]);
-      console.log(posts);
-    });
+  
+    const newPosts = postsFromDB.map((post) => post);
+    setPosts(newPosts);
   };
 
   useEffect(() => {
     displayPosts();
-  }, []);
+  }, [CurrentUser]);
 
   const loadPosts = async () => {
+    //retrive more post from the data base and render them on the screen 
     console.log("load posts");
   }; 
 
@@ -49,7 +47,14 @@ const HomePageComponent = () => {
     // Increment the likes count for the specified post
     const updatedPosts = posts.map(post => {
       if (post.id === postId) {
-        return { ...post, likes: post.likes + 1 };
+        // Check if the user has already liked the post
+        if (post.likedBy.includes(CurrentUser.ID)) {
+          // User has already liked the post, return it as is
+          return post;
+        } else {
+          // User hasn't liked the post, increment likes and add user to likedBy
+          return { ...post, likes: post.likes + 1, likedBy: [...post.likedBy, CurrentUser.ID] };
+        }
       }
       return post;
     });
@@ -70,8 +75,6 @@ const HomePageComponent = () => {
     setPosts(updatedPosts);
   };
 
-
-  
 
   return (
     <div className="home-page">

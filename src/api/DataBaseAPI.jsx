@@ -208,6 +208,7 @@ export const getUserPosts = async (userDocPath) => {
     const querySnapshot = await getDocs(query(collectionRef));
 
     const posts = [];
+    
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       posts.push({ ...data });
