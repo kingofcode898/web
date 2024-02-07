@@ -8,10 +8,12 @@ import "../Sass/Home.scss";
 import { createPostinDB, getUserPosts } from '../api/DataBaseAPI';
 
 const HomePageComponent = () => {
+  
   const [posts, setPosts] = useState([]);
   const [isCreatePostVisible, setIsCreatePostVisible] = useState(false);
   const [CurrentUser, setCurrentUser] = useContext(UserContext);
 
+  //Retrive the posts from the database and render them 
   const displayPosts = async () => {
     const postsFromDB = await getUserPosts("Users/" + CurrentUser.ID);
   
@@ -19,12 +21,15 @@ const HomePageComponent = () => {
     setPosts(newPosts);
   };
 
+  //Call the display posts function once when the homepage loads
   useEffect(() => {
     displayPosts();
-  }, [CurrentUser]);
+  }, []);
+
 
   const loadPosts = async () => {
-    //retrive more post from the data base and render them on the screen 
+    //Load the next 3 posts 
+    //
     console.log("load posts");
   }; 
 
@@ -44,6 +49,7 @@ const HomePageComponent = () => {
   };
 
   const handleLike = (postId) => {
+    //
     // Increment the likes count for the specified post
     const updatedPosts = posts.map(post => {
       if (post.id === postId) {
@@ -53,7 +59,7 @@ const HomePageComponent = () => {
           return post;
         } else {
           // User hasn't liked the post, increment likes and add user to likedBy
-          return { ...post, likes: post.likes + 1, likedBy: [...post.likedBy, CurrentUser.ID] };
+          return { ...post, likes: post.likes + 1 };
         }
       }
       return post;

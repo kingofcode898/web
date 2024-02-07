@@ -43,7 +43,8 @@ export const createPostinDB = async (userEmail, content) => {
         id: (parseInt(userData.posts_created) + 1), 
         date_created: formatted_date,
         content: content ,
-        likes: 0
+        likes: 0, 
+        likedBy: []; 
     })
     updateDoc(doc(firestore,"Users/" + userDoc[0]), {
       posts_created: parseInt(userData.posts_created) + 1
