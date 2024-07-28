@@ -29,48 +29,6 @@ export const addUserDb = async (username, email, password) => {
 };
 
 
-export const createPostinDB = async (userEmail, content) => {
-  try {
-    const userDoc = await findUser(userEmail)
-    const userData = userDoc[1]
-    const userPostPath  = "Users/" + userDoc[0] + "/Posts"; 
-    let date_created = new Date(Date.now());
-    let formatted_date = date_created.toLocaleString();
-
-    console.log(userPostPath)
-    const Post = await addDoc(collection(firestore, userPostPath), {
-        author: userData.username,
-        id: (parseInt(userData.posts_created) + 1), 
-        date_created: formatted_date,
-        content: content ,
-        likes: 0, 
-        likedBy: []; 
-    })
-    updateDoc(doc(firestore,"Users/" + userDoc[0]), {
-      posts_created: parseInt(userData.posts_created) + 1
-    });
-    console.log("Post succesfully added to firestore database!");
-
-    return Post;
-  } catch (error) {
-    console.error('Error creating post in the database:', error.message);
-    throw error;
-  }
-};
-
-
-export const getPost = async (UserID, ID) => {
-  try {
-      const CurrentUserPosts = "Users/" + UserID + "/Posts" + ID
-      const docRef = doc(firestore, CurrentUserPosts);
-
-      return docRef;
-
-  } catch (error) {
-    console.error('Error getting post:', error.message);
-    throw error;
-  }
-};
 
 
 export const addFollwing = async (username) =>{
@@ -128,30 +86,7 @@ export const addComment = async (postPath, comment) => {
   comment = addDoc(collection(firestore, postPath + '/Comments/'), comment);
   return comment;
 }
-
-export const storePhoto = async (photo) => {
-    try {
-      // Create a storage reference with a unique name
-      const storageRef = ref(storage, `photos/${Date.now()}_${photo.name}`);
   
-      // Upload the file
-      const uploadTask = uploadBytesResumable(storageRef, photo);
-  
-      // Get the download URL once the upload is complete
-      const snapshot = await uploadTask;
-      const downloadURL = await getDownloadURL(snapshot.ref);
-  
-      // You can use the downloadURL to save it in the database or use it as needed
-      console.log('File available at', downloadURL);
-      
-      return downloadURL;
-    } catch (error) {
-      console.error('Error uploading photo:', error.message);
-      throw error;
-    }
-  };
-  
-
 
 /*function that is called when a user logs in. It finds the document that has the same 
   the same email as the provided one in the login */
@@ -191,7 +126,7 @@ export const getUserDocument = async (userID) => {
     const userDoc = await getDoc(userDocRef);
 
     if (userDoc.exists()) {
-      console.log(JSON.stringify(userDoc.data()));
+      //console.log(JSON.stringify(userDoc.data()));
       return userDoc.data();
     }
   } catch (error) {
@@ -222,3 +157,68 @@ export const getUserPosts = async (userDocPath) => {
   }
 };
 
+export const storePhoto = async (photo) => {
+  try {
+    // Create a storage reference with a unique name
+    const storageRef = ref(storage, `photos/${Date.now()}_${photo.name}`);
+
+    // Upload the file
+    const uploadTask = uploadBytesResumable(storageRef, photo);
+
+    // Get the download URL once the upload is complete
+    const snapshot = await uploadTask;
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    // You can use the downloadURL to save it in the database or use it as needed
+    console.log('File available at', downloadURL);
+    
+    return downloadURL;
+  } catch (error) {
+    console.error('Error uploading photo:', error.message);
+    throw error;
+  }
+};
+
+
+export const createPostinDB = async (userEmail, content) => {
+  try {
+    const userDoc = await findUser(userEmail)
+    const userData = userDoc[1]
+    const userPostPath  = "Users/" + userDoc[0] + "/Posts"; 
+    let date_created = new Date(Date.now());
+    let formatted_date = date_created.toLocaleString();
+
+    console.log(userPostPath)
+    const Post = await addDoc(collection(firestore, userPostPath), {
+        author: userData.username,
+        id: (parseInt(userData.posts_created) + 1), 
+        date_created: formatted_date,
+        content: content ,
+        likes: 0, 
+        likedBy: [] 
+    })
+    updateDoc(doc(firestore,"Users/" + userDoc[0]), {
+      posts_created: parseInt(userData.posts_created) + 1
+    });
+    console.log("Post succesfully added to firestore database!");
+
+    return Post;
+  } catch (error) {
+    console.error('Error creating post in the database:', error.message);
+    throw error;
+  }
+};
+
+
+export const getPost = async (UserID, ID) => {
+  try {
+      const CurrentUserPosts = "Users/" + UserID + "/Posts" + ID
+      const docRef = doc(firestore, CurrentUserPosts);
+
+      return docRef;
+
+  } catch (error) {
+    console.error('Error getting post:', error.message);
+    throw error;
+  }
+};

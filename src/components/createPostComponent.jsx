@@ -8,18 +8,19 @@ const CreatePost = ({ onSubmit, onClose }) => {
   /* The code recives an on Submit function which comes from the homePage component. 
   That function handles creating posts filling it with the content from this create post. */ 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault();//what is this? ?????
     onSubmit({ content });
-    // Reset form fields
+    // Reset the content field
     setContent('');
   };
 
   return (
-    <div className='window'>
+    <div className='create-post'>
       <form onSubmit={handleSubmit}>
         <label>
           Content:
           <textarea
+            placeholder='Write whats on your mind here...'
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
