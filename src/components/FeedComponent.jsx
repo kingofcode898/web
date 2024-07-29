@@ -1,14 +1,14 @@
 // FeedComponent.jsx
 import React, { useEffect, useState } from 'react';
-import { db } from './firebase'; // Ensure the path is correct
-import Post from './Post';
+import { firestore } from '../firebaseConfig';
+import Post from './postComponent';
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const postsCollection = await db.collection('posts').get();
+      const postsCollection = await firestore.collection('posts').get();
       setPosts(postsCollection.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     };
 

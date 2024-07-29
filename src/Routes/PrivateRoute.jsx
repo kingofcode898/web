@@ -3,7 +3,7 @@ import { Route, Redirect } from 'react-router-dom';
 import { useAuth } from "../userContext";
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuth(); //creates the user constant what does th ebraces do? 
 
   return (
     <Route
