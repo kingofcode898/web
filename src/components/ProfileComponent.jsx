@@ -1,19 +1,17 @@
-import React, { useContext } from 'react' 
-import { UserContext } from '../userContext'
+import React from 'react' 
 import '../Sass/Profile.scss'
 import Navbar from './NavbarComponent'
-
+import { useAuth } from '../userContext' 
 function ProfileComponent() {
-  const [CurrentUser, setCurrentUser] = useContext(UserContext)
-
-  console.log(CurrentUser)
+  const { currentUser } = useAuth()
+ 
   return (
     <>
       <Navbar/> 
       <div className='main-info'>
-        <p className='Username-profile'>{CurrentUser.username}</p>
-        <p className='follower-count-profile'>{CurrentUser.followers}</p>
-        <p className='bio-profile'>{CurrentUser.bio}</p>
+        <p className='Username-profile'>Username: {currentUser.username }</p>
+        <p className='follower-count-profile'>follower count</p>
+        <p className='bio-profile'>bio</p>
       </div>
     <div className="User-posts">This will be the post box</div>
     </>
@@ -21,4 +19,4 @@ function ProfileComponent() {
   )
 }
 
-export default ProfileComponent
+export default ProfileComponent  

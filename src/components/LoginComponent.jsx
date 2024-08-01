@@ -1,49 +1,45 @@
-import React, { useContext, useState } from "react";
-import { LoginAPI } from "../api/AuthAPI";
+import React, { useState } from "react";
 import "../Sass/LoginComponent.scss";
 import Logo from "../assets/cross1.png";
-import { Link } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
-import { UserContext } from "../userContext";
+import { Link, useNavigate } from "react-router-dom";
+import { LoginAPI } from "../api/AuthAPI";
+import { useAuth } from "../userContext";
 import { findUser } from "../api/DataBaseAPI";
 
-
-//login component
 export default function LoginComponent() {
-  //makes call to login function from API
-  const [credentials, setCredentials] = useState({});
-  const navigate = useNavigate()
-  const [CurrentUser, setCurrentUser] = useContext(UserContext)
-  //login API call
-  const login = async () => {
+  const { currentUser, setCurrentUser } = useAuth(); 
+  const [usrCredentials, setUsrCredentials] = useState({});
+  const navigate = useNavigate();
+  const [failedLogin, setFailedLogin] = useState(false)
+   
+  const loginUsr = async () => {
     try {
-      let res = await LoginAPI(credentials.email, credentials.password);
-      
-      const user = await findUser(credentials.email);
-      const userData = user[1]
-      const userid = user[0]
-
-      console.log(userData)
+      const response = await LoginAPI(usrCredentials.email, usrCredentials.password);
+      const UserInfo = await findUser(usrCredentials.email)// returns [userId, UserInfo]
       
       setCurrentUser({
-          ID: userid,
-          email: credentials.email,
-          password: credentials.password,
-          username: userData.username,  
-          followers: userData.followers,
+        ID: UserInfo[0],
+        email: UserInfo[1].email,
+        password: UserInfo[1].password,
+        username: UserInfo[1].username,
+        followers: UserInfo[1].num_followers,
+        following: UserInfo[1].num_following
       })
 
-      if (res?.user) {
-        navigate('/Home');
-      } else {
-        console.log('Login failed');
+      if (response != false) {
+        navigate('/')
+      } else { 
+        setFailedLogin(true)
       }
+
+      
+
     } catch (err) {
       console.log(err);
     }
   };
 
-  // html content returned from this component
+  
   return (
     
     <div className="login-wrapper">
@@ -53,7 +49,7 @@ export default function LoginComponent() {
        <div className="auth-inputs">
         <input
           onChange={(event) =>
-            setCredentials({ ...credentials, email: event.target.value })
+            setUsrCredentials({ ...usrCredentials, email: event.target.value })
           }
           className="common-input"
           id="email-login"
@@ -61,14 +57,15 @@ export default function LoginComponent() {
         />
         <input
           onChange={(event) =>
-            setCredentials({ ...credentials, password: event.target.value })
+            setUsrCredentials({ ...usrCredentials, password: event.target.value })
           }
           className="common-input"
           id="password-login"
+          type="password"
           placeholder="Password"
         />
-        <button onClick={login} className="login-btn">
-          Log in{" "}
+        <button onClick={loginUsr} className="login-btn">
+          Log in
         </button>
         <p className="subtext">New to the App create an account?</p>
         <Link className="link" to="/signup">Create an account</Link>

@@ -8,11 +8,13 @@ const CreatePost = ({ onSubmit, onClose }) => {
   /* The code recives an on Submit function which comes from the homePage component. 
   That function handles creating posts filling it with the content from this create post. */ 
   const handleSubmit = (e) => {
-    e.preventDefault();//what is this? ?????
-    onSubmit({ content });
+    e.preventDefault();//prevents empty bocx
+    onSubmit({ content });//passes the content to the onsubbit
     // Reset the content field
     setContent('');
   };
+
+
 
   return (
     <div className='create-post'>

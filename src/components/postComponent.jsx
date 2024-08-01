@@ -3,7 +3,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import "../Sass/Post.scss";
 
-const Post = ({  author,  content,  likes,  onLike, onComment,timestamp}) => 
+const Post = ({  author,  content,  likes,  onLike, onComment, timestamp}) => 
 {
   return (
     <div className="post">
@@ -41,13 +41,6 @@ const Post = ({  author,  content,  likes,  onLike, onComment,timestamp}) =>
       <div className="post-comments">
         <h4>Comments:</h4>
         <p>Im working on it</p>
-        {/* <ul>
-          {comments.map((comment, index) => (
-            <li key={index} className="comment">
-              {comment}
-            </li>
-          ))}
-        </ul> */}
         <input
           type="text"
           placeholder="Add a comment..."

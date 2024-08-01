@@ -4,13 +4,13 @@ import "../Sass/LoginComponent.scss";
 import Logo from "../assets/cross1.png";
 import { Link, useNavigate } from "react-router-dom";
 import { addUserDb } from "../api/DataBaseAPI";
-import { UserContext } from "../userContext";
+import { useAuth } from "../userContext";
 
 function SignupComponent() {
   // stores all credentials from the input;
   const [credentials, setCredentials] = useState({});
   const navigate = useNavigate();
-  const [CurrentUser, setCurrentUser] = useContext(UserContext);
+  const {currentUser, setCurrentUser } = useAuth();
 
   const SignUp = async () => {
     try {
@@ -24,7 +24,8 @@ function SignupComponent() {
         const ID = await addUserDb(
           credentials.username,
           credentials.email,
-          credentials.password
+          credentials.password,
+          credentials.bday
         );
 
         console.log(ID.id);
@@ -36,10 +37,10 @@ function SignupComponent() {
           password: credentials.password,
           username: credentials.username,
           followers: 0,
-          following: 0,
+          following: 0
         });
 
-        navigate("/home")
+        navigate("/")
       }
     } catch (err) {
       console.log(err);
@@ -59,6 +60,14 @@ function SignupComponent() {
           className="common-input"
           placeholder="username"
         />
+        {/* <input
+          onChange={(event) =>
+            setCredentials({ ...credentials, username: event.target.value })
+          }
+          className="common-input"
+          type="date"
+          placeholder="Enter your bday"
+        /> */}
         <input
           onChange={(event) =>
             setCredentials({ ...credentials, email: event.target.value })
@@ -77,7 +86,7 @@ function SignupComponent() {
           Create{" "}
         </button>
         <p className="subtext">Already have an account?</p>
-        <Link className="link" to="/">
+        <Link className="link" to="/login">
           Log in
         </Link>
       </div>

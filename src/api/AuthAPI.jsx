@@ -18,17 +18,9 @@ export const LoginAPI = async (email, password) => {
   try {
     const response = await signInWithEmailAndPassword(auth, email, password);
 
-    // Optionally, you can return only the necessary user information
-    const userInformation = {
-      uid: response.user.uid,
-      email: response.user.email,
-    };
-
     return response
   } catch (err) {
     console.error(err);
-    return err;
+    return false;
   }
 };
-
-

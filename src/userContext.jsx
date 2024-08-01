@@ -1,13 +1,13 @@
-//userContext
+// userContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from './firebaseConfig';
 
-const UserContext = createContext();//this is the u
+const AuthContext = createContext();
 
-export const useAuth = () => useContext(UserContext);//this is a funtion that uses the user state our own hook? 
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null); //creates a state but of what type? 
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ currentUser }}>
+    <AuthContext.Provider value={{ currentUser , setCurrentUser}}>
       {!loading && children}
     </AuthContext.Provider>
   );

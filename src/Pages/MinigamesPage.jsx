@@ -1,6 +1,6 @@
 import React from "react";
 import MiniGames from "../components/MiniGames.jsx";
 
-export default function Login(){
+export default function LoginPage(){
     return <MiniGames/>;
 }

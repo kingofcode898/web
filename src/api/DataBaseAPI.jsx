@@ -18,7 +18,7 @@ export const addUserDb = async (username, email, password) => {
       following: {},
       posts_created: 0
     });
-     doc(firestore, newUser.path)
+    doc(firestore, newUser.path)
     console.log("user succesfully added to firestore database!");
     return newUser;
 
@@ -101,12 +101,9 @@ export const addComment = async (postPath, comment) => {
       const userDocs = await getDocs(q);
   
       if (!userDocs.empty) {
-        // Since you're querying by email, there might be multiple documents matching the condition.
-        // If you expect only one, you can access the first document in the query snapshot.
+        // Since querying by email make it so that just the firts one is the one
         const userDoc = userDocs.docs[0];
-  
-        console.log(JSON.stringify(userDoc.data()));
-        return [userDoc.id,userDoc.data()];
+        return [userDoc.id, userDoc.data()];
       } else {
         console.log("No matching document found.");
         return null;
@@ -134,9 +131,6 @@ export const getUserDocument = async (userID) => {
   }
 };
 
-export const getUserWUsername = async (username) => {
-  
-}
 
 export const getUserPosts = async (userDocPath) => {
   try {

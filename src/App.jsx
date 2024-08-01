@@ -1,15 +1,23 @@
-// App.jsx
-import React, { useState } from 'react';
-import { RouterProvider} from 'react-router-dom';
-import { UserContext } from './userContext';
-import { router } from './Routes';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './userContext';
+import LoginPage from './Pages/LoginPage';
+import HomePage from './Pages/HomePage';
+import ProfilePage from './Pages/ProfilePage';
+import SignUpPage from './Pages/SignUpPage';
 
 const App = () => {
-    const [CurrentUser, setCurrentUser] = useState({})
   return (
-    <UserContext.Provider value={[CurrentUser, setCurrentUser]}>
-      <RouterProvider router={router} ></RouterProvider>
-    </UserContext.Provider>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 };
 
