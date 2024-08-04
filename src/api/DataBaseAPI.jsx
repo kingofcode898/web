@@ -28,9 +28,7 @@ export const addUserDb = async (username, email, password) => {
   }
 };
 
-
-
-
+//ADD F
 export const addFollwing = async (username) =>{
   try {
     const userDoc = await findUser(username)
@@ -173,8 +171,8 @@ export const storePhoto = async (photo) => {
   }
 };
 
-
-export const createPostinDB = async (userEmail, content) => {
+//gmail
+export const createPostinDB = async (userID, content) => {
   try {
     const userDoc = await findUser(userEmail)
     const userData = userDoc[1]
@@ -182,7 +180,6 @@ export const createPostinDB = async (userEmail, content) => {
     let date_created = new Date(Date.now());
     let formatted_date = date_created.toLocaleString();
 
-    console.log(userPostPath)
     const Post = await addDoc(collection(firestore, userPostPath), {
         author: userData.username,
         id: (parseInt(userData.posts_created) + 1), 

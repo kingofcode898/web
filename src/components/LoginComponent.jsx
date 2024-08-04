@@ -22,8 +22,9 @@ export default function LoginComponent() {
         email: UserInfo[1].email,
         password: UserInfo[1].password,
         username: UserInfo[1].username,
-        followers: UserInfo[1].num_followers,
-        following: UserInfo[1].num_following
+        num_followers: UserInfo[1].num_followers,
+        num_following: UserInfo[1].num_following. 
+        UserInfo:[]
       })
 
       if (response != false) {

@@ -30,7 +30,7 @@ const CreatePost = ({ onSubmit, onClose }) => {
         </label>
         <div>
           <button type="submit">Create Post</button>
-          <button type="button" onClick={onClose}>Close</button>
+          <button type="button" onClick={ onClose }>Close</button>
         </div>
       </form>
     </div>
