@@ -29,15 +29,16 @@ function SignupComponent() {
         );
 
         console.log(ID.id);
-        
         //makes the new signed up user the current user for the app
         setCurrentUser({
           ID: ID.id,
           email: credentials.email,
           password: credentials.password,
           username: credentials.username,
-          followers: 0,
-          following: 0
+          num_followers: 0,
+          num_following: 0,
+          followers: [], 
+          following: []
         });
 
         navigate("/")

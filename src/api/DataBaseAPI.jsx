@@ -13,9 +13,9 @@ export const addUserDb = async (username, email, password) => {
       email: email,
       password: password,
       num_followers: 0,
-      followers: {},
+      followers: [],
       num_following: 0, 
-      following: {},
+      following: [],
       posts_created: 0
     });
     doc(firestore, newUser.path)
@@ -28,67 +28,38 @@ export const addUserDb = async (username, email, password) => {
   }
 };
 
-//ADD F
-export const addFollwing = async (username) =>{
-  try {
-    const userDoc = await findUser(username)
-    const userData = userDoc[1]
-    const userDocPath = "Users/" + userDoc[0]
-    const userDocRef = doc(firestore, userDocPath);
-    const userDocData = await getDoc(userDocRef);
-    const userDocDataData = userDocData.data()
-    const userDocDataDataFollowing = userDocDataData.following
-
-    if (userDocDataDataFollowing[CurrentUser.username] == null){
-      updateDoc(doc(firestore,userDocPath), {
-        num_following: parseInt(userData.num_following) + 1,
-        following: {
-          ...userDocDataDataFollowing,
-          [CurrentUser.username]: CurrentUser.username
-        }
-      });
-     console.log("following added"); 
+/*This will be the function that the user n*/
+export const addFollow = async (currrentUsername, FollowUser) => 
+  {
+    try {
+      //find the main user 
+      currentUserInfo = await findUserWUsername(currrentUsername)
+      UserToBeFollowed = await findUserWUsername(FollowUser)
+      //for main user add the following person in their follwing 
+      
+      //for the UTBF add the user in their followers 
+      //increase both by one
+    } catch (error) {
+      console.error("Error in the follow process: ", error.message)
+      throw error
     }
-  } catch (error) {
-    console.error('Error adding following:', error.message);
-    throw error;
-  }
-}
-
-export const addFollower = async (follower) => {
-  try {
-    const userDoc = await findUser(follower)
-    const userData = userDoc[1]
-    const userDocPath = "Users/" + userDoc[0]
-    const userDocRef = doc(firestore, userDocPath);
-    const userDocData = await getDoc(userDocRef);
-    const userDocDataData = userDocData.data()
-    const userDocDataDataFollowers = userDocDataData.followers
-
-    if (userDocDataDataFollowers[CurrentUser.username] == null){
-      updateDoc(doc(firestore,userDocPath), {
-        num_followers: parseInt(userData.num_followers) + 1,
-        followers: {
-          ...userDocDataDataFollowers,
-          [CurrentUser.username]: CurrentUser.username
-        }
-      });
-    }
-  } catch (error) {
-    console.error('Error adding follower:', error.message);
-    throw error;
-  }
 }
 
 export const addComment = async (postPath, comment) => {
-  comment = addDoc(collection(firestore, postPath + '/Comments/'), comment);
-  return comment;
+  try {
+    comment = addDoc(collection(firestore, postPath + '/Comments/'), comment);
+    return comment;
+  
+  } catch (error) {
+    console.error("error adding a comment: ", error.message)
+    throw error
+  }
 }
   
 
 /*function that is called when a user logs in. It finds the document that has the same 
   the same email as the provided one in the login */
-  export const findUser = async (email) => {
+  export const findUserWEmail = async (email) => {
     try {
       // Finds the document where the email matches the credential email
       const q = query(
@@ -110,71 +81,34 @@ export const addComment = async (postPath, comment) => {
       console.error(error);
     }
   };
+
+  export const findUserWUsername = async (username) => {
+    try {
+      // Finds the document where the username matches the given username
+      const q = query(
+        collection(firestore, "Users"),
+        where("username", "==", username)
+      );
+  
+      const userDocs = await getDocs(q);
+  
+      if (!userDocs.empty) {
+        const userDoc = userDocs.docs[0];
+        return [userDoc.id, userDoc.data()];
+      } else {
+        console.log("Couldn't find that user");
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
   
 
-//Find a doc and returns the json version of the data
-export const getUserDocument = async (userID) => {
+/*This function takes in the userEmail and finds their information based on that*/
+export const createPostinDB = async (userEmail, content) => {
   try {
-    console.log(userID);
-    const path = "Users/" + userID;
-    const userDocRef = doc(firestore, path);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists()) {
-      //console.log(JSON.stringify(userDoc.data()));
-      return userDoc.data();
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-
-export const getUserPosts = async (userDocPath) => {
-  try {
-    const collectionRef = collection(firestore, userDocPath + '/Posts');
-    const querySnapshot = await getDocs(query(collectionRef));
-
-    const posts = [];
-    
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      posts.push({ ...data });
-    });
-
-    return posts;
-  } catch (error) {
-    console.error('Error getting user posts: ', error);
-    throw error;
-  }
-};
-
-export const storePhoto = async (photo) => {
-  try {
-    // Create a storage reference with a unique name
-    const storageRef = ref(storage, `photos/${Date.now()}_${photo.name}`);
-
-    // Upload the file
-    const uploadTask = uploadBytesResumable(storageRef, photo);
-
-    // Get the download URL once the upload is complete
-    const snapshot = await uploadTask;
-    const downloadURL = await getDownloadURL(snapshot.ref);
-
-    // You can use the downloadURL to save it in the database or use it as needed
-    console.log('File available at', downloadURL);
-    
-    return downloadURL;
-  } catch (error) {
-    console.error('Error uploading photo:', error.message);
-    throw error;
-  }
-};
-
-//gmail
-export const createPostinDB = async (userID, content) => {
-  try {
-    const userDoc = await findUser(userEmail)
+    const userDoc = await findUserWEmail(userEmail)
     const userData = userDoc[1]
     const userPostPath  = "Users/" + userDoc[0] + "/Posts"; 
     let date_created = new Date(Date.now());
@@ -184,7 +118,7 @@ export const createPostinDB = async (userID, content) => {
         author: userData.username,
         id: (parseInt(userData.posts_created) + 1), 
         date_created: formatted_date,
-        content: content ,
+        content: content,
         likes: 0, 
         likedBy: [] 
     })
@@ -200,16 +134,46 @@ export const createPostinDB = async (userID, content) => {
   }
 };
 
-
+/*  This function takes in the userID and the Id of the post, The UserID is the users
+    document in the database while the postID is what gets queryed for. The post ID
+    increment up from zero. There froer the most recent ones are the ones at the top 
+    of the list. */
 export const getPost = async (UserID, ID) => {
   try {
-      const CurrentUserPosts = "Users/" + UserID + "/Posts" + ID
-      const docRef = doc(firestore, CurrentUserPosts);
+      const UserPostsPath = "Users/" + UserID + "/Posts"
 
-      return docRef;
+      const q = query(
+        collection(firestore, UserPostsPath),
+        where("id", "==", ID)
+      );
+  
+      const result = await getDocs(q);
+      const postDoc = result[0]
+      console.log(postDoc.data())
+      return postDoc.data()
 
   } catch (error) {
     console.error('Error getting post:', error.message);
+    throw error;
+  }
+};
+
+  //plural version 
+export const getUserPosts = async (userDocPath) => {
+  try {
+    const collectionRef = collection(firestore, userDocPath + '/Posts');
+    const querySnapshot = await getDocs(query(collectionRef));
+
+    const posts = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      posts.push({ ...data });
+    });
+
+    return posts;
+  } catch (error) {
+    console.error('Error getting user posts: ', error);
     throw error;
   }
 };
