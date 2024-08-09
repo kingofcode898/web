@@ -1,36 +1,54 @@
-// HomePageComponent.jsx
 import React, { useContext, useState, useEffect } from "react";
-import CreatePost from "./createPostComponent";
+import CreatePost from "./CreatePostComponent";
 import Navbar from "./NavbarComponent";
 import Feed from "./FeedComponent";
 import "../Sass/Home.scss";
 import { Link } from "react-router-dom";
 import { useAuth } from "../userContext";
-import { createPostinDB, getUserPosts } from "../api/DataBaseAPI";
+import { createPostinDB, findUserWUsername, getPostwUsername } from "../api/DataBaseAPI";
 
 const HomePageComponent = () => {
-  //toggle the creat post component
-  //make sure user informstion is loaded
   const { currentUser } = useAuth();
-  const { followingArray } = currentUser.following;
+  
+  const [followingArray, setFollowingArray] = useState([]); // Array containing followers
+  const [followingPostMap, setFollowingPostMap] = useState({});
   const [amountPosts, setAmountPosts] = useState(0);
   const [postsList, setPostList] = useState([]);
   const [createPost, setCreatePost] = useState(false);
 
-  const onStart = () => {
-    followingArray.push(currentUser.username)
-    setUserPostMap();
-    retriveNextPost(5); 
-  }
+  useEffect(() => {
+    const initialize = async () => {
+      if (currentUser && currentUser.following) {
+        const following = [...currentUser.following, currentUser.username];
+        setFollowingArray(following);
+        await initializeFollowingPostMap(following);
+        await retrieveNextPost(2);
+      } else {
+        console.log("The user has not logged in");
+      }
+    };
 
-  const setUserPostMap = () => {
-    for(let i = 0; i < followingArray.size(); i++){
-      
+    initialize();
+  }, [currentUser]);
+
+  const initializeFollowingPostMap = async (followingArray) => {
+    const postMap = {};
+    for (let user of followingArray) {
+      try {
+        let userinfo = await findUserWUsername(user);
+        postMap[user] = userinfo[1].posts_created || 0;
+      } catch (error) {
+        console.error(`Error fetching user info for ${user}:`, error);
+      }
     }
-  }
+    setFollowingPostMap(postMap);
+  };
+
   const logUserInfo = () => {
-    console.log(currentUser);
-    console.log(postsList);
+    console.log("User Info:", currentUser);
+    console.log("Following Array:", followingArray);
+    console.log("Posts List:", postsList);
+    console.log("Following Post Map:", followingPostMap);
   };
 
   const toggleCreatePost = () => {
@@ -40,53 +58,55 @@ const HomePageComponent = () => {
   const CreateNewPost = (PostContent) => {
     const newPost = {
       author: currentUser.username,
-      timestamp: 1,
+      timestamp: Date.now(),
       content: PostContent.content,
       likes: 0,
-      id: amountPosts
+      id: amountPosts,
     };
     createPostinDB(currentUser.email, PostContent.content);
     setPostList((postsList) => [...postsList, newPost]);
     setAmountPosts(amountPosts + 1);
-    setCreatePost(false)
+    setCreatePost(false);
   };
 
-  const retriveNextPost = async (amount) => {
+  const retrieveNextPost = async (amount) => {
     try {
-      for(let i = 0; i < amount; i++){
-        let  randomIndex = Math.floor(Math.random() * followingArray.length);
-        person = followingArray[randomIndex]; 
-
-        //get the post 
-        //add the post to the list of posts
-
-        newPost = await getUserPost(person, ID )
-        setPostList((postList => [...postList, newPost]))
+      console.log("Retrtieving the next post")
+      let newPosts = [];
+      for (let i = 0; i < amount; i++) {
+        let randomIndex = Math.floor(Math.random() * followingArray.length);
+        let person = followingArray[randomIndex];
+        if (person && followingPostMap[person] > 0) {
+          let newPost = await getPostwUsername(person, followingPostMap[person]);
+          setFollowingPostMap((prevMap) => ({
+            ...prevMap,
+            [person]: prevMap[person] - 1,
+          }));
+          newPosts.push(newPost);
+        }
       }
-      
+      console.log(newPost)
+      setPostList((postsList) => [...postsList, ...newPosts]);
+      console.log(postsList)
     } catch (error) {
-      
+      console.error("Error retrieving posts:", error);
     }
-  }
+  };
 
   return (
     <div className="home-page">
       <Navbar />
       {createPost && <CreatePost onClose={toggleCreatePost} onSubmit={CreateNewPost} />}
-      {/* Conditionally render the component by short circuiting the rendering*/}
-      <Feed postList={postsList} getPosts={retriveNextPost} />
-      <p>HOmepage in progress</p>
-      <p>
-        Ive also decided to make the feed a seperate element becuase thats
-        easier
-      </p>
-      <button onClick={logUserInfo}> Press to log user thing to thing </button>
+      <Feed postList={postsList} getPosts={retrieveNextPost} />
+      <p>Homepage in progress</p>
+      <p>I've also decided to make the feed a separate element because that's easier.</p>
+      <button onClick={logUserInfo}>Press to log user info</button>
       {!createPost && (
         <button className="new-post" onClick={toggleCreatePost}>
           Create Post? 👀
         </button>
       )}
-      <Link to={"/login"}>Login </Link>
+      <Link to={"/login"}>Login</Link>
     </div>
   );
 };

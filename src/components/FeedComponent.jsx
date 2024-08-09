@@ -1,20 +1,16 @@
 // FeedComponent.jsx
 import React, { useEffect, useState } from 'react';
-import { firestore } from '../firebaseConfig';
 import Post from './postComponent';
-import { getPost } from '../api/DataBaseAPI';
 
-const Feed = ({ postList,getPosts }) => {
+const Feed = ({ postList }) => {
 
   const handleLike = (postId) => {
     // Implement like functionality
     console.log("The post has been liked")
-    console.log(postList[postId].likes)
-    postList[postId].likes += 1; 
+  
   };
 
   const handleComment = (postId, comment) => {
-    // Implement comment functionality
     
     console.log('this will handel a post comment ')
   };

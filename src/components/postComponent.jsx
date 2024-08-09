@@ -17,7 +17,7 @@ const Post = ({  author,  content,  likes,  onLike, onComment, timestamp}) =>
       <div className="post-like">
         <div className="toggle">
           <input type="checkbox" id="heart-check" onClick={onLike} />
-          <label for="heart-check" id="heart">
+          <label htmlFor="heart-check" id="heart">
             <svg
               viewBox="0 0 24 22"
               version="1.1"

@@ -158,6 +158,36 @@ export const getPost = async (UserID, ID) => {
   }
 };
 
+export const getPostwUsername = async (username, postid) => {
+  try {
+    const userInfo = await findUserWUsername(username);
+    const UserPostsPath = "Users/" + userInfo[0] + "/Posts";
+
+    const q = query(
+      collection(firestore, UserPostsPath),
+      where("id", "==", postid)
+    );
+
+    const result = await getDocs(q);
+    let postDoc = null;
+
+    result.forEach((doc) => {
+      postDoc = doc; // In case of multiple documents, it will store the last one
+    });
+
+    if (postDoc) {
+      console.log(postDoc.data());
+      return postDoc.data();
+    } else {
+      console.log("No post found with the specified ID");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting post:", error.message);
+    throw error;
+  }
+};
+
   //plural version 
 export const getUserPosts = async (userDocPath) => {
   try {
