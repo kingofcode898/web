@@ -16,18 +16,18 @@ const HomePageComponent = () => {
   const [postsList, setPostList] = useState([]);
   const [createPost, setCreatePost] = useState(false);
 
-  useEffect(() => {
-    const initialize = async () => {
-      if (currentUser && currentUser.following) {
-        const following = [...currentUser.following, currentUser.username];
-        setFollowingArray(following);
-        await initializeFollowingPostMap(following);
-        await retrieveNextPost(2);
-      } else {
-        console.log("The user has not logged in");
-      }
-    };
+  const initialize = async () => {
+    if (currentUser && currentUser.following) {
+      const following = [...currentUser.following, currentUser.username];
+      setFollowingArray(following);
+      await initializeFollowingPostMap(following);
+      await retrieveNextPost(2);
+    } else {
+      console.log("The user has not logged in");
+    }
+  };
 
+  useEffect(() => {
     initialize();
   }, [currentUser]);
 
@@ -71,23 +71,27 @@ const HomePageComponent = () => {
 
   const retrieveNextPost = async (amount) => {
     try {
-      console.log("Retrtieving the next post")
+      console.log("retrieving the next post")
       let newPosts = [];
       for (let i = 0; i < amount; i++) {
         let randomIndex = Math.floor(Math.random() * followingArray.length);
         let person = followingArray[randomIndex];
+
         if (person && followingPostMap[person] > 0) {
           let newPost = await getPostwUsername(person, followingPostMap[person]);
+          console.log("The post returned: ", newPost)
+          console.log("The post id that was searched for", followingPostMap[person])
           setFollowingPostMap((prevMap) => ({
             ...prevMap,
             [person]: prevMap[person] - 1,
           }));
           newPosts.push(newPost);
+          console.log("The  value updated?: ", followingPostMap[person]); 
+          console
         }
       }
-      console.log(newPost)
       setPostList((postsList) => [...postsList, ...newPosts]);
-      console.log(postsList)
+      return true
     } catch (error) {
       console.error("Error retrieving posts:", error);
     }
@@ -107,7 +111,7 @@ const HomePageComponent = () => {
         </button>
       )}
       <Link to={"/login"}>Login</Link>
-    </div>
+    </div> 
   );
 };
 
