@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import CreatePost from "./CreatePostComponent";
 import Navbar from "./NavbarComponent";
 import Feed from "./FeedComponent";
@@ -15,17 +15,29 @@ const HomePageComponent = () => {
   const [amountPosts, setAmountPosts] = useState(0);
   const [postsList, setPostList] = useState([]);
   const [createPost, setCreatePost] = useState(false);
+  const hasFetchedPosts = useRef(false);
 
-  const initialize = async () => {
-    if (currentUser && currentUser.following) {
-      const following = [...currentUser.following, currentUser.username];
-      setFollowingArray(following);
-      await initializeFollowingPostMap(following);
-      await retrieveNextPost(2);
+  const initialize = () => {
+    if (currentUser && currentUser.following) {//if userissetup
+      const following = [...currentUser.following, currentUser.username];//this might not work
+      setFollowingArray(following); 
+      
     } else {
       console.log("The user has not logged in");
     }
   };
+  useEffect(() => {
+    initializeFollowingPostMap(followingArray)
+  }, [followingArray])
+  
+  
+
+  useEffect(() => {
+    if (!hasFetchedPosts.current && Object.keys(followingPostMap).length > 0) {
+      retrieveNextPost(5);
+      hasFetchedPosts.current = true; // Set the ref to true after the first call
+    }
+  }, [followingPostMap]);
 
   useEffect(() => {
     initialize();
@@ -36,9 +48,9 @@ const HomePageComponent = () => {
     for (let user of followingArray) {
       try {
         let userinfo = await findUserWUsername(user);
-        postMap[user] = userinfo[1].posts_created || 0;
+        postMap[user] = userinfo[1].posts_created || 0;//if they have something otherwise do zer0
       } catch (error) {
-        console.error(`Error fetching user info for ${user}:`, error);
+        console.error(`Error fetching user info for ${user}:`, error);//this is a nice error
       }
     }
     setFollowingPostMap(postMap);
@@ -72,22 +84,21 @@ const HomePageComponent = () => {
   const retrieveNextPost = async (amount) => {
     try {
       console.log("retrieving the next post")
+      console.log("the following array: ", followingArray)
+      console.log("The following post amount map: ",  followingPostMap)
       let newPosts = [];
       for (let i = 0; i < amount; i++) {
         let randomIndex = Math.floor(Math.random() * followingArray.length);
         let person = followingArray[randomIndex];
 
-        if (person && followingPostMap[person] > 0) {
-          let newPost = await getPostwUsername(person, followingPostMap[person]);
-          console.log("The post returned: ", newPost)
+        if (person && followingPostMap[person] - i > 0) {
+          let newPost = await getPostwUsername(person, followingPostMap[person] - i);
+          console.log("The post returned: ", newPost); 
           console.log("The post id that was searched for", followingPostMap[person])
-          setFollowingPostMap((prevMap) => ({
-            ...prevMap,
-            [person]: prevMap[person] - 1,
-          }));
           newPosts.push(newPost);
-          console.log("The  value updated?: ", followingPostMap[person]); 
-          console
+        }
+        else {
+          console.log(`${person} has no more posts`)
         }
       }
       setPostList((postsList) => [...postsList, ...newPosts]);

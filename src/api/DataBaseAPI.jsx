@@ -176,7 +176,6 @@ export const getPostwUsername = async (username, postid) => {
     });
 
     if (postDoc) {
-      console.log(postDoc.data());
       return postDoc.data();
     } else {
       console.log("No post found with the specified ID");
