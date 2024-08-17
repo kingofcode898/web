@@ -1,5 +1,6 @@
 body {
   margin: 0;
+  padding: 0;
   font-family: Arial, sans-serif;
   background-color: #f0f0f0;
 }
@@ -61,4 +62,8 @@ body {
   &:-webkit-details-marker {
     display: none;
   }
+}
+
+.home-page{
+  margin-left: 300px;
 }

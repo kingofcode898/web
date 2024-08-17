@@ -83,34 +83,34 @@ const HomePageComponent = () => {
 
   const retrieveNextPost = async (amount) => {
     try {
-      console.log("retrieving the next post")
-      console.log("the following array: ", followingArray)
-      console.log("The following post amount map: ",  followingPostMap)
       let newPosts = [];
+      let updatedPostMap = { ...followingPostMap }; // Work with a copy of the state
+  
       for (let i = 0; i < amount; i++) {
         let randomIndex = Math.floor(Math.random() * followingArray.length);
         let person = followingArray[randomIndex];
-
-        if (person && followingPostMap[person] - i > 0) {
-          let newPost = await getPostwUsername(person, followingPostMap[person] - i);
-          console.log("The post returned: ", newPost); 
-          console.log("The post id that was searched for", followingPostMap[person])
+  
+        if (person && updatedPostMap[person] > 0) {
+          let newPost = await getPostwUsername(person, updatedPostMap[person]);
+          console.log("The post returned: ", newPost);
+          updatedPostMap[person] -= 1; // Update the copy
           newPosts.push(newPost);
-        }
-        else {
-          console.log(`${person} has no more posts`)
+        } else {
+          console.log(`${person} has ${updatedPostMap[person]}`);
         }
       }
+  
+      setFollowingPostMap(updatedPostMap); // Update state once after the loop
       setPostList((postsList) => [...postsList, ...newPosts]);
-      return true
     } catch (error) {
       console.error("Error retrieving posts:", error);
     }
   };
-
+  
   return (
-    <div className="home-page">
+    <>
       <Navbar />
+      <div  className="home-page">
       {createPost && <CreatePost onClose={toggleCreatePost} onSubmit={CreateNewPost} />}
       <Feed postList={postsList} getPosts={retrieveNextPost} />
       <p>Homepage in progress</p>
@@ -122,7 +122,8 @@ const HomePageComponent = () => {
         </button>
       )}
       <Link to={"/login"}>Login</Link>
-    </div> 
+      </div>
+    </> 
   );
 };
 
