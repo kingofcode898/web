@@ -46,9 +46,10 @@ const SearchComponent = ({ onClose, isOpen }) => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search for a user..."
+          placeholder={currentUser ? "Search for a user..." : "Please login to search"}
+          disabled = {!currentUser}
         />
-        <button type="submit">Search</button>
+        <button type="submit" disabled = {!currentUser}>Search</button>
       </form>
 
       {/* Render search result if it exists */}

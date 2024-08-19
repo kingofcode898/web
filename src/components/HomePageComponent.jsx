@@ -124,13 +124,13 @@ const HomePageComponent = () => {
         <div className="feed-container">
           {createPost && <CreatePost onClose={toggleCreatePost} onSubmit={CreateNewPost} />}
           <Feed postList={postsList} getPosts={retrieveNextPost} />
-          {!currentUser.username && <p>Please login to see/create posts</p>}
+          {  !currentUser && <p>Please login to see/create posts</p>}
           <div className="post-end">
             {!hasMorePosts && <p>You have reached the end of the available posts.</p>}
           </div>
         </div>
 
-        {!createPost && (
+        { currentUser  && (
           <div className="new-post-container">
             <button className="new-post" onClick={toggleCreatePost}>
               Create Post? 👀
@@ -138,7 +138,7 @@ const HomePageComponent = () => {
           </div>
         )}
 
-        {!currentUser.username && (
+        { !currentUser && (
           <div className="login-btn-home">
             <Link to={"/login"}>Login</Link>
           </div>

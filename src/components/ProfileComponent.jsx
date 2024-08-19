@@ -48,7 +48,7 @@ function ProfileComponent() {
   return (
     <>
       <Navbar />
-      {currentUser.username ? (
+      { currentUser ? (
         <div className="profile-page">
           <div className="profile-header">
             <img
