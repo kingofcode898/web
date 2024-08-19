@@ -2,7 +2,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
+  background-color: #f8f8f8;
 }
 .new-post {
   appearance: none;
@@ -22,7 +22,6 @@ body {
   line-height: 20px;
   list-style: none;
   padding: 6px 16px;
-  position: relative;
   transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
   user-select: none;
   -webkit-user-select: none;
@@ -31,6 +30,7 @@ body {
   white-space: nowrap;
   word-wrap: break-word;
   margin-top: 10px;
+  margin-right: 20px;
 
   &:hover {
     background-color: #f3f4f6;
@@ -64,6 +64,44 @@ body {
   }
 }
 
-.home-page{
-  margin-left: 300px;
+.home-page {
+  margin-left: 100px;
+  display: flex;
+  justify-content: space-between; /* Space out children evenly */
+  align-items: flex-start; /* Align items to the top */
+  
+  .loading {
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    color: #888;
+  }
+
+  .post-end {
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    color: #888;
+  }
+}
+
+.feed-container {
+  flex: 1; /* Feed takes up as much space as possible */
+}
+
+.new-post-container {
+  margin-left: 20px; /* Add some space between the feed and the button */
+  align-self: flex-start; /* Align the button to the top */
+}
+
+.new-post {
+  background-color: #e5e5e5;
+  padding: 10px 20px;
+  border: 1px solid black;
+  cursor: pointer;
+  text-align: center;
+}
+
+.login-btn-home{
+  margin-left: 25px;
 }

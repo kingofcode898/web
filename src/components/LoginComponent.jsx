@@ -32,7 +32,8 @@ export default function LoginComponent() {
           num_following: UserInfo[1].num_following,
           followers: UserInfo[1].followers,
           following: UserInfo[1].following,
-          posts_created: UserInfo[1].posts_created
+          posts_created: UserInfo[1].posts_created, 
+          profilePictureURL: UserInfo[1].profilePictureUrl
         });
 
         navigate("/");

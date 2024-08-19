@@ -5,11 +5,12 @@ const CreatePost = ({ onSubmit, onClose }) => {
   //text content state 
   const [content, setContent] = useState('');
   
+  
   /* The code recives an on Submit function which comes from the homePage component. 
   That function handles creating posts filling it with the content from this create post. */ 
   const handleSubmit = (e) => {
-    e.preventDefault();//prevents empty bocx
-    onSubmit({ content });//passes the content to the onsubbit
+    e.preventDefault(); //prevents empty box
+    onSubmit({ content });// passes the content to the onsubbit
     // Reset the content field
     setContent('');
   };

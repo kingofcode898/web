@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import CreatePost from "./CreatePostComponent";
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import CreatePost from "./createPostComponent";
 import Navbar from "./NavbarComponent";
 import Feed from "./FeedComponent";
 import "../Sass/Home.scss";
@@ -9,33 +9,34 @@ import { createPostinDB, findUserWUsername, getPostwUsername } from "../api/Data
 
 const HomePageComponent = () => {
   const { currentUser } = useAuth();
-  
-  const [followingArray, setFollowingArray] = useState([]); // Array containing followers
+
+  const [followingArray, setFollowingArray] = useState([]);
   const [followingPostMap, setFollowingPostMap] = useState({});
   const [amountPosts, setAmountPosts] = useState(0);
   const [postsList, setPostList] = useState([]);
   const [createPost, setCreatePost] = useState(false);
+  const [hasMorePosts, setHasMorePosts] = useState(true); // Tracks if there are more posts to load
+  const observer = useRef();
+
   const hasFetchedPosts = useRef(false);
 
   const initialize = () => {
-    if (currentUser && currentUser.following) {//if userissetup
-      const following = [...currentUser.following, currentUser.username];//this might not work
-      setFollowingArray(following); 
-      
+    if (currentUser && currentUser.following) {
+      const following = [...currentUser.following, currentUser.username];
+      setFollowingArray(following);
     } else {
       console.log("The user has not logged in");
     }
   };
+
   useEffect(() => {
-    initializeFollowingPostMap(followingArray)
-  }, [followingArray])
-  
-  
+    initializeFollowingPostMap(followingArray);
+  }, [followingArray]);
 
   useEffect(() => {
     if (!hasFetchedPosts.current && Object.keys(followingPostMap).length > 0) {
       retrieveNextPost(5);
-      hasFetchedPosts.current = true; // Set the ref to true after the first call
+      hasFetchedPosts.current = true;
     }
   }, [followingPostMap]);
 
@@ -48,19 +49,12 @@ const HomePageComponent = () => {
     for (let user of followingArray) {
       try {
         let userinfo = await findUserWUsername(user);
-        postMap[user] = userinfo[1].posts_created || 0;//if they have something otherwise do zer0
+        postMap[user] = userinfo[1].posts_created || 0;
       } catch (error) {
-        console.error(`Error fetching user info for ${user}:`, error);//this is a nice error
+        console.error(`Error fetching user info for ${user}:`, error);
       }
     }
     setFollowingPostMap(postMap);
-  };
-
-  const logUserInfo = () => {
-    console.log("User Info:", currentUser);
-    console.log("Following Array:", followingArray);
-    console.log("Posts List:", postsList);
-    console.log("Following Post Map:", followingPostMap);
   };
 
   const toggleCreatePost = () => {
@@ -84,46 +78,79 @@ const HomePageComponent = () => {
   const retrieveNextPost = async (amount) => {
     try {
       let newPosts = [];
-      let updatedPostMap = { ...followingPostMap }; // Work with a copy of the state
-  
+      let updatedPostMap = { ...followingPostMap };
+
       for (let i = 0; i < amount; i++) {
         let randomIndex = Math.floor(Math.random() * followingArray.length);
         let person = followingArray[randomIndex];
-  
+
         if (person && updatedPostMap[person] > 0) {
           let newPost = await getPostwUsername(person, updatedPostMap[person]);
-          console.log("The post returned: ", newPost);
-          updatedPostMap[person] -= 1; // Update the copy
+          updatedPostMap[person] -= 1;
           newPosts.push(newPost);
         } else {
-          console.log(`${person} has ${updatedPostMap[person]}`);
+          console.log(`${person} has no more posts.`);
         }
       }
-  
-      setFollowingPostMap(updatedPostMap); // Update state once after the loop
+
+      setFollowingPostMap(updatedPostMap);
       setPostList((postsList) => [...postsList, ...newPosts]);
+
+      if (newPosts.length < amount) {
+        setHasMorePosts(false); // No more posts to load
+      }
     } catch (error) {
       console.error("Error retrieving posts:", error);
     }
   };
-  
+
+  const lastPostElementRef = useCallback(
+    (node) => {
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMorePosts) {
+          retrieveNextPost(5);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [hasMorePosts, followingArray, followingPostMap]
+  );
+
   return (
     <>
       <Navbar />
-      <div  className="home-page">
-      {createPost && <CreatePost onClose={toggleCreatePost} onSubmit={CreateNewPost} />}
-      <Feed postList={postsList} getPosts={retrieveNextPost} />
-      <p>Homepage in progress</p>
-      <p>I've also decided to make the feed a separate element because that's easier.</p>
-      <button onClick={logUserInfo}>Press to log user info</button>
-      {!createPost && (
-        <button className="new-post" onClick={toggleCreatePost}>
-          Create Post? 👀
-        </button>
-      )}
-      <Link to={"/login"}>Login</Link>
+      <div className="home-page">
+        <div className="feed-container">
+          {createPost && <CreatePost onClose={toggleCreatePost} onSubmit={CreateNewPost} />}
+          <Feed postList={postsList} getPosts={retrieveNextPost} />
+          {!currentUser.username && <p>Please login to see/create posts</p>}
+          <div className="post-end">
+            {!hasMorePosts && <p>You have reached the end of the available posts.</p>}
+          </div>
+        </div>
+
+        {!createPost && (
+          <div className="new-post-container">
+            <button className="new-post" onClick={toggleCreatePost}>
+              Create Post? 👀
+            </button>
+          </div>
+        )}
+
+        {!currentUser.username && (
+          <div className="login-btn-home">
+            <Link to={"/login"}>Login</Link>
+          </div>
+        )}
+
+        {hasMorePosts && (
+          <div ref={lastPostElementRef} className="loading">
+            Loading more posts...
+          </div>
+        )}
       </div>
-    </> 
+    </>
   );
 };
 

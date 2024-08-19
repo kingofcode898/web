@@ -1,6 +1,6 @@
 import { addDoc, collection, getDoc, doc, query, where, getDocs, updateDoc, } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'; // Import your Firebase Storage configuration
 import { firestore, storage} from "../firebaseConfig";
+import { getStorage, ref, uploadBytesResumable,getDownloadURL } from "firebase/storage";
 
 // Import the user collection
 const userCollection = collection(firestore, "Users");
@@ -28,22 +28,40 @@ export const addUserDb = async (username, email, password) => {
   }
 };
 
-/*This will be the function that the user n*/
-export const addFollow = async (currrentUsername, FollowUser) => 
-  {
-    try {
-      //find the main user 
-      currentUserInfo = await findUserWUsername(currrentUsername)
-      UserToBeFollowed = await findUserWUsername(FollowUser)
-      //for main user add the following person in their follwing 
-      
-      //for the UTBF add the user in their followers 
-      //increase both by one
-    } catch (error) {
-      console.error("Error in the follow process: ", error.message)
-      throw error
-    }
-}
+/*This will be the function that allows a user to follow*/
+export const addFollow = async (currrentUsername, FollowUsername) => {
+  try {
+    // Find the main user and the user to be followed
+    const currentUserInfo = await findUserWUsername(currrentUsername);
+    const UserToBeFollowed = await findUserWUsername(FollowUsername); // aka UTBF
+
+    // Paths to user documents
+    const currentUserPath = "Users/" + currentUserInfo[0];
+    const UTBFPath = "Users/" + UserToBeFollowed[0];
+
+    // References to Firestore documents
+    const currentUserRef = doc(firestore, currentUserPath);
+    const UTBFRef = doc(firestore, UTBFPath);
+
+    // Update following information for the current user
+    const new_num_following = currentUserInfo[1].num_following + 1;
+    const new_following = [...currentUserInfo[1].following, FollowUsername];
+
+    // Update followers information for the user to be followed
+    const new_num_followers = UserToBeFollowed[1].num_followers + 1;
+    const new_followers = [...UserToBeFollowed[1].followers, currrentUsername];
+
+    // Perform updates in Firestore
+    await updateDoc(currentUserRef, { following: new_following, num_following: new_num_following });
+    await updateDoc(UTBFRef, { followers: new_followers, num_followers: new_num_followers });
+
+    console.log(`${currrentUsername} is now following ${FollowUsername}`);
+
+  } catch (error) {
+    console.error("Error in the follow process: ", error.message);
+    throw error;
+  }
+};
 
 export const addComment = async (postPath, comment) => {
   try {
@@ -206,3 +224,56 @@ export const getUserPosts = async (userDocPath) => {
     throw error;
   }
 };
+
+/*this function recieves a photo and uploads it to the database where when
+the user logs in again it will be there profile picture */
+export const uploadProfilePicture = async (filename, file, userDocPath) => {
+  const storage = getStorage();
+  
+  // Create the file metadata
+  /** @type {any} */
+  const metadata = {
+    contentType: 'image/jpg'
+  };
+  
+  // Upload file and metadata to the object 'profilePic/filename.jpg'
+  const storageRef = ref(storage, 'UserProfilePictures/' + filename);
+  const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+  
+  // Listen for state changes, errors, and completion of the upload.
+  uploadTask.on('state_changed',
+    (snapshot) => {
+      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      console.log('Upload is ' + progress + '% done');
+      switch (snapshot.state) {
+        case 'paused':
+          console.log('Upload is paused');
+          break;
+        case 'running':
+          console.log('Upload is running');
+          break;
+      }
+    }, 
+    (error) => {
+      console.error('Error during upload:', error);
+    }, 
+    async () => {
+      // Upload completed successfully, now we can get the download URL
+      try {
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        console.log('File available at', downloadURL);
+
+        // Store the download URL in Firestore
+        let userPath = "Users/" + userDocPath
+        const userRef = doc(firestore, userPath);
+        await updateDoc(userRef, { profilePictureUrl: downloadURL});
+
+        console.log('Profile picture URL saved to Firestore');
+        return downloadURL
+      } catch (error) {
+        console.error('Error saving profile picture URL:', error);
+      }
+    }
+  );
+}
