@@ -117,6 +117,10 @@ const HomePageComponent = () => {
     [hasMorePosts, followingArray, followingPostMap]
   );
 
+  const printUserInfo = () => {
+      console.log(currentUser)
+  }
+
   return (
     <>
       <Navbar />
@@ -143,13 +147,14 @@ const HomePageComponent = () => {
             <Link to={"/login"}>Login</Link>
           </div>
         )}
-
+        
         {hasMorePosts && (
           <div ref={lastPostElementRef} className="loading">
             Loading more posts...
           </div>
         )}
       </div>
+      
     </>
   );
 };

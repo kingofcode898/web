@@ -100,9 +100,10 @@ export const addComment = async (postPath, comment) => {
     }
   };
 
+  // Finds the document where the username matches the given username
   export const findUserWUsername = async (username) => {
     try {
-      // Finds the document where the username matches the given username
+      
       const q = query(
         collection(firestore, "Users"),
         where("username", "==", username)
@@ -205,11 +206,15 @@ export const getPostwUsername = async (username, postid) => {
   }
 };
 
-  //plural version 
-export const getUserPosts = async (userDocPath) => {
+
+
+
+export const getUserPosts = async (userDocID) => {
   try {
-    const collectionRef = collection(firestore, userDocPath + '/Posts');
-    const querySnapshot = await getDocs(query(collectionRef));
+    const userDocPath = "Users/" + userDocID
+
+    const userPostCollectionRef = collection(firestore, userDocPath + '/Posts');
+    const querySnapshot = await getDocs(query(userPostCollectionRef));
 
     const posts = [];
     
@@ -224,6 +229,10 @@ export const getUserPosts = async (userDocPath) => {
     throw error;
   }
 };
+
+export const deletePost = (postid, userID) => {
+  const userPostCollection = userID
+}
 
 /*this function recieves a photo and uploads it to the database where when
 the user logs in again it will be there profile picture */
