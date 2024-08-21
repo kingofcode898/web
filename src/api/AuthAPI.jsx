@@ -31,3 +31,7 @@ export const GoogleSignInAPI = async () => {
     return false;
   }
 };
+
+export const logoutAPI = () => {
+  
+}

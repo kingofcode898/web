@@ -12,7 +12,6 @@ const HomePageComponent = () => {
 
   const [followingArray, setFollowingArray] = useState([]);
   const [followingPostMap, setFollowingPostMap] = useState({});
-  const [amountPosts, setAmountPosts] = useState(0);
   const [postsList, setPostList] = useState([]);
   const [createPost, setCreatePost] = useState(false);
   const [hasMorePosts, setHasMorePosts] = useState(true); // Tracks if there are more posts to load
@@ -67,11 +66,19 @@ const HomePageComponent = () => {
       timestamp: Date.now(),
       content: PostContent.content,
       likes: 0,
-      id: amountPosts,
+      id: currentUser.posts_created + 1
     };
     createPostinDB(currentUser.email, PostContent.content);
     setPostList((postsList) => [...postsList, newPost]);
-    setAmountPosts(amountPosts + 1);
+    
+    const updatedUser = {
+      ...currentUser, 
+      posts_created: currentUser.posts_created + 1
+    }
+
+    const userInfoString = JSON.stringify(updatedUser);
+    localStorage.setItem("user-info", userInfoString)
+
     setCreatePost(false);
   };
 
@@ -96,7 +103,7 @@ const HomePageComponent = () => {
       setFollowingPostMap(updatedPostMap);
       setPostList((postsList) => [...postsList, ...newPosts]);
 
-      if (newPosts.length < amount) {
+      if (newPosts.length < 1) {
         setHasMorePosts(false); // No more posts to load
       }
     } catch (error) {
@@ -106,10 +113,11 @@ const HomePageComponent = () => {
 
   const lastPostElementRef = useCallback(
     (node) => {
+      console.log("This is being called")
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMorePosts) {
-          retrieveNextPost(5);
+          retrieveNextPost(1);
         }
       });
       if (node) observer.current.observe(node);
@@ -118,8 +126,20 @@ const HomePageComponent = () => {
   );
 
   const printUserInfo = () => {
-      console.log(currentUser)
-  }
+    console.log("The current user: ");
+    console.log(currentUser);
+    
+    let item = localStorage.getItem("user-info");
+    console.log("What is stored in local storage:");
+    
+    if (item) {
+      // Parse the JSON string back into an object
+      item = JSON.parse(item);
+      console.log(item);
+    } else {
+      console.log("No user info found in local storage.");
+    }
+  };
 
   return (
     <>
@@ -153,6 +173,7 @@ const HomePageComponent = () => {
             Loading more posts...
           </div>
         )}
+        <button onClick={printUserInfo}>log </button>
       </div>
       
     </>

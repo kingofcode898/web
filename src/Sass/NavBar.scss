@@ -20,6 +20,7 @@
   width: 100%; /* Ensure the hover effect covers the full width of the navbar */
   text-align: center;
   transition: background-color 0.3s ease; /* Smooth background color transition */
+  border-radius: 5px;
 
   &:hover {
     background-color: #f0f0f0; /* Light grey hover background color */

@@ -234,6 +234,12 @@ export const deletePost = (postid, userID) => {
   const userPostCollection = userID
 }
 
+export const updateUserBio = (userID, newBio) => {
+  const userRef = doc(firestore, 'Users/'+ userID)
+
+  updateDoc(userRef, {bio : newBio})
+}
+
 /*this function recieves a photo and uploads it to the database where when
 the user logs in again it will be there profile picture */
 export const uploadProfilePicture = async (filename, file, userDocPath) => {

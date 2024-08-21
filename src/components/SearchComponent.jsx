@@ -27,11 +27,17 @@ const SearchComponent = ({ onClose, isOpen }) => {
       addFollow(currentUser.username, UTBF);
   
       const new_following = [...currentUser.following, UTBF];
-      setCurrentUser({
+      
+      const updatedUser = {
         ...currentUser,
-        following: new_following
-      });
-  
+        following: new_following, 
+        num_following: currentUser.num_following + 1
+      }
+
+      const userInfoString = JSON.stringify(updatedUser);
+      localStorage.setItem("user-info", userInfoString)
+      
+      setCurrentUser(updatedUser)
       console.log("Follow complete");
     } else {
       console.log("Already following this user");

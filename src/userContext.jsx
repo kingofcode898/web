@@ -11,32 +11,18 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  const onRefresh = async (user) =>{
-    const UserInfo = await findUserWEmail(user.email); // returns [userId, UserInfo]
+  const onRefresh = async () =>{
+      const userInfo = JSON.parse(localStorage.getItem("user-info"))
+      
+      setCurrentUser(userInfo)
 
-      setCurrentUser({
-        ID: UserInfo[0],
-        email: UserInfo[1].email,
-        password: UserInfo[1].password,
-        username: UserInfo[1].username,
-        num_followers: UserInfo[1].num_followers,
-        num_following: UserInfo[1].num_following,
-        followers: UserInfo[1].followers,
-        following: UserInfo[1].following,
-        posts_created: UserInfo[1].posts_created, 
-        profilePictureURL: UserInfo[1].profilePictureUrl
-      });
-
-      console.log("current user: ", currentUser)
   }
 
   
 
   useEffect( () => {
-    
     const unsubscribe = auth.onAuthStateChanged(user => {
-      
-      onRefresh(user)
+      onRefresh()
       setLoading(false);
     })
 

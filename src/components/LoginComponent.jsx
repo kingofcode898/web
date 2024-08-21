@@ -23,7 +23,7 @@ export default function LoginComponent() {
       const UserInfo = await findUserWEmail(usrCredentials.email); // returns [userId, UserInfo]
 
       if (response !== false) {
-        setCurrentUser({
+        const loggedInUser = {
           ID: UserInfo[0],
           email: UserInfo[1].email,
           password: UserInfo[1].password,
@@ -33,8 +33,14 @@ export default function LoginComponent() {
           followers: UserInfo[1].followers,
           following: UserInfo[1].following,
           posts_created: UserInfo[1].posts_created, 
-          profilePictureURL: UserInfo[1].profilePictureUrl
-        });
+          profilePictureURL: UserInfo[1].profilePictureUrl,
+          bio: UserInfo[1].bio
+        };
+        const userInfoString = JSON.stringify(loggedInUser);
+        console.log(userInfoString)
+        localStorage.setItem("user-info", userInfoString)
+        
+        setCurrentUser(loggedInUser);
 
         navigate("/");
       } else {
