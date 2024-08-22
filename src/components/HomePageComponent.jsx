@@ -9,56 +9,47 @@ import { createPostinDB, findUserWUsername, getPostwUsername } from "../api/Data
 
 const HomePageComponent = () => {
   const { currentUser } = useAuth();
-
   const [followingArray, setFollowingArray] = useState([]);
   const [followingPostMap, setFollowingPostMap] = useState({});
   const [postsList, setPostList] = useState([]);
   const [createPost, setCreatePost] = useState(false);
-  const [hasMorePosts, setHasMorePosts] = useState(true); // Tracks if there are more posts to load
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const observer = useRef();
+  const isInitialized = useRef(false);
 
-  const hasFetchedPosts = useRef(false);
-
-  const initialize = () => {
+  const initialize = useCallback(async () => {
     if (currentUser && currentUser.following) {
       const following = [...currentUser.following, currentUser.username];
+      const postMap = {};
+      for (let user of following) {
+        try {
+          let userinfo = await findUserWUsername(user);
+          postMap[user] = userinfo[1].posts_created || 0;
+        } catch (error) {
+          console.error(`Error fetching user info for ${user}:`, error);
+        }
+      }
       setFollowingArray(following);
+      setFollowingPostMap(postMap);
+      isInitialized.current = true;
     } else {
       console.log("The user has not logged in");
     }
-  };
-
-  useEffect(() => {
-    initializeFollowingPostMap(followingArray);
-  }, [followingArray]);
-
-  useEffect(() => {
-    if (!hasFetchedPosts.current && Object.keys(followingPostMap).length > 0) {
-      retrieveNextPost(5);
-      hasFetchedPosts.current = true;
-    }
-  }, [followingPostMap]);
+  }, [currentUser]);
 
   useEffect(() => {
     initialize();
-  }, [currentUser]);
+  }, [initialize]);
 
-  const initializeFollowingPostMap = async (followingArray) => {
-    const postMap = {};
-    for (let user of followingArray) {
-      try {
-        let userinfo = await findUserWUsername(user);
-        postMap[user] = userinfo[1].posts_created || 0;
-      } catch (error) {
-        console.error(`Error fetching user info for ${user}:`, error);
-      }
+  useEffect(() => {
+    if (isInitialized.current && Object.keys(followingPostMap).length > 0) {
+      retrieveNextPost(5);
     }
-    setFollowingPostMap(postMap);
-  };
+  }, [followingPostMap]);
 
-  const toggleCreatePost = () => {
-    setCreatePost(!createPost);
-  };
+  const toggleCreatePost = () => setCreatePost(!createPost);
 
   const CreateNewPost = (PostContent) => {
     const newPost = {
@@ -66,80 +57,70 @@ const HomePageComponent = () => {
       timestamp: Date.now(),
       content: PostContent.content,
       likes: 0,
-      id: currentUser.posts_created + 1
+      id: currentUser.posts_created + 1,
     };
-    createPostinDB(currentUser.email, PostContent.content);
-    setPostList((postsList) => [...postsList, newPost]);
     
-    const updatedUser = {
-      ...currentUser, 
-      posts_created: currentUser.posts_created + 1
-    }
-
-    const userInfoString = JSON.stringify(updatedUser);
-    localStorage.setItem("user-info", userInfoString)
-
+    createPostinDB(currentUser.email, PostContent.content);
+    setPostList((prevPosts) => [newPost, ...prevPosts,]);
+    
+    localStorage.setItem("user-info", JSON.stringify({
+      ...currentUser, posts_created: currentUser.posts_created + 1,
+    }));
     setCreatePost(false);
   };
 
   const retrieveNextPost = async (amount) => {
+    if (!isInitialized.current || !hasMorePosts) return;
+
     try {
       let newPosts = [];
       let updatedPostMap = { ...followingPostMap };
+      let index = currentIndex;
 
       for (let i = 0; i < amount; i++) {
-        let randomIndex = Math.floor(Math.random() * followingArray.length);
-        let person = followingArray[randomIndex];
+        let person = followingArray[index];
 
-        if (person && updatedPostMap[person] > 0) {
-          let newPost = await getPostwUsername(person, updatedPostMap[person]);
-          updatedPostMap[person] -= 1;
-          newPosts.push(newPost);
-        } else {
-          console.log(`${person} has no more posts.`);
+        let attempts = 0;
+        while (attempts < followingArray.length) {
+          if (person && updatedPostMap[person] > 0) {
+            let newPost = await getPostwUsername(person, updatedPostMap[person]);
+            updatedPostMap[person] -= 1;
+            newPosts.push(newPost);
+            break;
+          } else {
+            console.log(`${person} has no more posts.`);
+          }
+
+          index = (index + 1) % followingArray.length;
+          person = followingArray[index];
+          attempts++;
         }
+
+        if (attempts === followingArray.length) break;
       }
 
+      setCurrentIndex(index);
       setFollowingPostMap(updatedPostMap);
-      setPostList((postsList) => [...postsList, ...newPosts]);
+      setPostList((prevPosts) => [...prevPosts, ...newPosts]);
 
-      if (newPosts.length < 1) {
-        setHasMorePosts(false); // No more posts to load
-      }
+      if (newPosts.length < amount) setHasMorePosts(false);
     } catch (error) {
       console.error("Error retrieving posts:", error);
     }
   };
 
-  const lastPostElementRef = useCallback(
-    (node) => {
-      console.log("This is being called")
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMorePosts) {
-          retrieveNextPost(1);
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [hasMorePosts, followingArray, followingPostMap]
-  );
+  const endOfListRef = useCallback((node) => {
+    if (observer.current) observer.current.disconnect();
 
-  const printUserInfo = () => {
-    console.log("The current user: ");
-    console.log(currentUser);
-    
-    let item = localStorage.getItem("user-info");
-    console.log("What is stored in local storage:");
-    
-    if (item) {
-      // Parse the JSON string back into an object
-      item = JSON.parse(item);
-      console.log(item);
-    } else {
-      console.log("No user info found in local storage.");
-    }
-  };
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMorePosts) {
+        console.log("End of list in view, loading more posts...");
+        retrieveNextPost(5);
+      }
+    });
+
+    if (node) observer.current.observe(node);
+  }, [hasMorePosts, retrieveNextPost]);
 
   return (
     <>
@@ -147,14 +128,13 @@ const HomePageComponent = () => {
       <div className="home-page">
         <div className="feed-container">
           {createPost && <CreatePost onClose={toggleCreatePost} onSubmit={CreateNewPost} />}
-          <Feed postList={postsList} getPosts={retrieveNextPost} />
-          {  !currentUser && <p>Please login to see/create posts</p>}
-          <div className="post-end">
-            {!hasMorePosts && <p>You have reached the end of the available posts.</p>}
+          <Feed postList={postsList} />
+          <div ref={endOfListRef} className="end-of-list">
+            {hasMorePosts ? "Loading more posts..." : "You have reached the end of the available posts."}
           </div>
         </div>
 
-        { currentUser  && (
+        {currentUser && (
           <div className="new-post-container">
             <button className="new-post" onClick={toggleCreatePost}>
               Create Post? 👀
@@ -162,20 +142,12 @@ const HomePageComponent = () => {
           </div>
         )}
 
-        { !currentUser && (
+        {!currentUser && (
           <div className="login-btn-home">
             <Link to={"/login"}>Login</Link>
           </div>
         )}
-        
-        {hasMorePosts && (
-          <div ref={lastPostElementRef} className="loading">
-            Loading more posts...
-          </div>
-        )}
-        <button onClick={printUserInfo}>log </button>
       </div>
-      
     </>
   );
 };

@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import '../Sass/Navbar.scss';
 import Logo from "../assets/cross1.png";
 import { Link } from 'react-router-dom';
+import { useAuth } from '../userContext';
 import SearchComponent from './SearchComponent';
 
 const Navbar = () => {
+
+  const {currentUser}  = useAuth()
+
   const [showSearch, setShowSearch] = useState(false);
 
   const toggleSearch = () => {
@@ -34,7 +38,9 @@ const Navbar = () => {
       <div className='navItem' onClick={toggleSearch}>
           <div className='search-toggle'>🔍</div>
       </div>
-
+      <div className='navitem'>
+        <img src={currentUser.profilePictureURL ? currentUser.profilePictureURL : "/blankprofile.png"} className='nav-pfp'></img>
+      </div>
       {showSearch && <SearchComponent onClose={toggleSearch} isOpen={showSearch}/>}
     </div>
   );

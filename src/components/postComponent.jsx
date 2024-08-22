@@ -3,11 +3,12 @@ import React from "react";
 import PropTypes from "prop-types";
 import "../Sass/Post.scss";
 
-const Post = ({  author,  content,  likes,  onLike, onComment, timestamp}) => 
+const Post = ({  author,  content,  likes,  onLike, onComment, timestamp, authorpfp}) => 
 {
   return (
     <div className="post">
       <div className="post-header">
+        <img src={authorpfp ? authpfp : "/blankprofile.png"} className="post-pfp"></img>
         <p>{author}</p>
         <p>{timestamp}</p>
       </div>
@@ -37,20 +38,6 @@ const Post = ({  author,  content,  likes,  onLike, onComment, timestamp}) =>
           </label>
         </div>
         <div className="like-count"> Likes: {likes}</div>
-      </div>
-      <div className="post-comments">
-        <h4>Comments:</h4>
-        <p>Im working on it</p>
-        <input
-          type="text"
-          placeholder="Add a comment..."
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              onComment(e.currentTarget.value);
-              e.currentTarget.value = "";
-            }
-          }}
-        />
       </div>
     </div>
   );

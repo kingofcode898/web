@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
   
   const onRefresh = async () =>{
       const userInfo = JSON.parse(localStorage.getItem("user-info"))
-      
       setCurrentUser(userInfo)
 
   }
@@ -22,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect( () => {
     const unsubscribe = auth.onAuthStateChanged(user => {
-      onRefresh()
+      onRefresh(user.email)
       setLoading(false);
     })
 

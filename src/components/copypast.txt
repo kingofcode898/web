@@ -1,0 +1,221 @@
+{/* <div className="post-comments">
+        <h4>Comments:</h4>
+        <p>Im working on it</p>
+        <input
+          type="text"
+          placeholder="Add a comment..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onComment(e.currentTarget.value);
+              e.currentTarget.value = "";
+            }
+          }}
+        />
+      </div> */}
+
+
+  
+  .post {
+    border: 1px solid #ddd;
+    margin-top: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+  }
+  
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .post-header p {
+    margin: 0;
+    font-weight: bold;
+  }
+  
+  .post-content {
+    padding: 16px;
+  }
+  
+  .post-actions {
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .post-actions button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #385185;
+  }
+  
+  .post-comments {
+    padding: 16px;
+  }
+  
+  .post-comments h4 {
+    margin-bottom: 8px;
+  }
+  
+  .post-comments ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .post-comments li {
+    margin-bottom: 8px;
+  }
+  
+  .post-comments input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  // Style the input placeholder text
+  .post-comments input::placeholder {
+    color: #bbb;
+  }
+  .comment {
+    list-style: none;
+    margin-bottom: 8px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  /* Optional: Add hover effect */
+  .comment:hover {
+    background-color: #f3f4f6;
+  }
+  .post-like {
+    display: flex;
+    align-items: center;
+  
+    .like-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      font-size: 16px;
+      color: #555; // Default color for the heart
+  
+      &.active {
+        color: #ff0000; // Color for the filled heart when active
+      }
+    }
+  
+    .like-count {
+      margin-left: 8px;
+      color: #555; // Default color for the like count
+    }
+  }
+  $color-blue: rgb(78, 101, 203);
+$color-purple: rgb(113, 75, 128);
+$color-pink: rgb(203, 66, 116);
+
+$transition-time: 500ms;
+$transition-ease: cubic-bezier(.1, .7, .8, .3);
+
+
+.toggle {
+  display: flex;
+  width: 100px;
+  height: 100px;
+  border-radius: 50px;
+  place-items: center;
+  place-content: center;
+
+  &:hover {
+    background-color: rgba($color-pink, 0.1);
+  }
+
+  input {
+    position: absolute;
+    visibility: hidden;
+  }
+
+  label {
+    cursor: pointer;
+
+    svg {
+      width: 48px;
+    }
+
+    #stroke {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      stroke-linecap: round;
+      stroke-width: 2.5;
+    }
+
+    #initial {
+      stroke-width: 1.5;
+      stroke: $color-pink;
+      fill: transparent;
+    }
+  }
+
+  input:checked + label {
+    svg {
+      transform-origin: 50% 50%;
+      animation: heart $transition-time cubic-bezier(.64, -1.5, .64, 1.5);
+      animation-fill-mode: forwards;
+    }
+
+    #initial {
+      display: none;
+    }
+
+    #stroke {
+      animation: stroke $transition-time $transition-ease;
+      animation-fill-mode: forwards;
+    }
+  }
+}
+
+@keyframes heart {
+  from {
+    transform: scale(1);
+  }
+  78% {
+    transform: scale(1.25);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes stroke {
+  from {
+    stroke: $color-blue;
+    fill: transparent;
+  }
+  50% {
+    stroke: $color-purple;
+  }
+  85% {
+    fill: transparent;
+  }
+  to {
+    stroke-dashoffset: 0;
+    stroke: $color-pink;
+    fill: $color-pink;
+  }
+}
+
+.post-pfp{
+  max-width: 24px;
+  margin: 0;
+  padding: 0;
+}

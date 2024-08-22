@@ -23,7 +23,7 @@ const CreatePost = ({ onSubmit, onClose }) => {
         <label>
           Content:
           <textarea
-            placeholder='Write whats on your mind here...'
+            placeholder='Write whats on your mind...'
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
