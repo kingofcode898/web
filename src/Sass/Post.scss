@@ -3,18 +3,22 @@
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin: 20px 0;
-  padding: 15px;
-  max-width: 500px;
   width: 100%;
   font-family: Arial, sans-serif;
   min-height: 140px;
+  position: relative; /* To position the three-dot menu within the post */
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  min-height: 550px;
 
   .post-header {
     display: flex;
     align-items: center;
     margin-bottom: 15px;
 
-  .post-pfp {
+    .post-pfp {
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -53,36 +57,147 @@
     .toggle {
       position: relative;
       margin-right: 10px;
-
-      input[type="checkbox"] {
-        display: none;
-      }
-
-      label {
-        cursor: pointer;
-        svg {
-          width: 24px;
-          height: 22px;
-
-          path {
-            fill: #ccc;
-            transition: fill 0.2s ease;
-          }
-        }
-      }
-
-      input[type="checkbox"]:checked + label svg path#initial {
-        fill: #e74c3c;
-      }
-
-      input[type="checkbox"]:checked + label svg path#stroke {
-        stroke: #e74c3c;
-      }
     }
 
     .like-count {
       font-size: 14px;
       color: #333;
     }
+  }
+
+  /* Three-dot menu styles */
+  .post-three-dot-menu {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    .post-three-dot-button {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #333;
+      }
+    }
+
+    .post-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      z-index: 1000;
+
+      button {
+        display: block;
+        width: 100%;
+        padding: 8px 12px;
+        background: none;
+        border: none;
+        text-align: left;
+        cursor: pointer;
+        font-size: 14px;
+
+        &:hover {
+          background: #f0f0f0;
+        }
+      }
+    }
+  }
+}
+
+/* Like button styles */
+.heart-icon {
+  transition: fill 0.3s ease-in-out, transform 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.liked .heart-icon {
+  transform: scale(1.2);
+  fill: #ed4956;
+}
+
+.like-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+.like-button:focus .heart-icon,
+.like-button:hover .heart-icon {
+  transform: scale(1.2);
+}
+
+.post-like-count {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+//photo stlyes :local-link
+
+.post-photo-carousel{
+  margin-bottom: 15px;
+  .post-carousel{
+    position: relative;
+    width: 100%;
+    min-height: 400px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    overflow: hidden;
+      width: 400px; /* Minimum width */
+      height: 400px; /* Minimum height */
+  }
+  .post-carousel-image{
+    width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px; /* Rounded corners like Instagram */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+      transition: transform 0.2s ease-in-out; /* Smooth zoom effect on hover */
+  }
+  .post-carousel-image:hover {
+    transform: scale(1.05); /* Slight zoom on hover */
+  }
+}
+
+.post-carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: background 0.3s ease; /* Smooth transition for background change */
+  border-radius: 30px;
+
+  &.prev {
+    left: 10px;
+  }
+
+  &.next {
+    right: 10px;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.7); /* Darken the background on hover */
   }
 }

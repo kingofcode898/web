@@ -1,52 +1,130 @@
 // postComponent.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import "../Sass/Post.scss";
+import { useAuth } from "../userContext";
+import { useState } from "react";
 
-const Post = ({  author,  content,  likes,  onLike, onComment, timestamp, authorpfp}) => 
+const Post = ({  author,  caption,  likes,  onLike, onComment, timestamp, authorpfp, postID, onDelete, photourlArray}) => 
 {
+  const {currentUser} = useAuth()
+
+  const [showMenu, setShowMenu ] = useState(false); 
+  const [liked, setLiked] = useState(false); // State to track if the post is liked
+  const [numLikes, setNumLikes] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(()=>{
+    setNumLikes(likes)
+  },[])
+
+  const toggleOptions = () => {
+    setShowMenu(!showMenu)
+  }
+
+  const handleLike = () => {
+    
+    if(liked){
+      setNumLikes(numLikes - 1)
+    } else{
+      setNumLikes( numLikes + 1)
+    }
+
+    setLiked(!liked); 
+  
+    onLike(postID); 
+
+  };
+
+  const handleComment = () => {
+      onComment()
+  }
+
+  const goToNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % (photourlArray.length));
+  };
+
+  const goToPrevious = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + (photourlArray.length )) % (photourlArray.length ));
+  };
+
   return (
     <div className="post">
       <div className="post-header">
-        <img src={authorpfp ? authpfp : "/blankprofile.png"} className="post-pfp"></img>
+        <img src={authorpfp ? authorpfp : "/blankprofile.png"} className="post-pfp" alt="Profile" />
         <p>{author}</p>
         <p>{timestamp}</p>
       </div>
-      <div className="post-content">
-        <p>{content}</p>
+      <div className="post-photo-carousel">
+            <div className="post-carousel">
+                <>
+                  <img
+                    src={photourlArray[currentIndex]}
+                    alt={`Preview ${currentIndex + 1}`}
+                    className="post-carousel-image"
+                  />
+                </>
+                <>
+                  <button
+                    type="button"
+                    className="post-carousel-button prev"
+                    onClick={goToPrevious}
+                    aria-label="Previous Image"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    className="post-carousel-button next"
+                    onClick={goToNext}
+                    aria-label="Next Image"
+                  >
+                    ›
+                  </button>
+                </>
+            </div>
+          </div>
+      <div className="post-caption">
+        <p>{caption}</p>
       </div>
       <div className="post-like">
         <div className="toggle">
-          <input type="checkbox" id="heart-check" onClick={onLike} />
-          <label htmlFor="heart-check" id="heart">
+          <button className={`like-button ${liked ? 'liked' : ''}`} onClick={handleLike}>
             <svg
-              viewBox="0 0 24 22"
-              version="1.1"
               xmlns="http://www.w3.org/2000/svg"
-              xmlnsXlink="http://www.w3.org/1999/xlink"
+              viewBox="0 0 24 24"
+              width="24px"
+              height="24px"
+              className="heart-icon"
             >
               <path
-                id="initial"
-                d="M11.8189091,20.3167303 C17.6981818,16.5505143 20.6378182,12.5122542 20.6378182,8.20195014 C20.6378182,5.99719437 18.8550242,4 16.3283829,4 C13.777264,4 12.5417153,6.29330284 11.8189091,6.29330284 C11.0961029,6.29330284 10.1317157,4 7.30943526,4 C4.90236126,4 3,5.64715533 3,8.20195014 C3,12.5122346 5.93963637,16.5504946 11.8189091,20.3167303 Z"
-              ></path>
-              <path
-                id="stroke"
-                fill="none"
-                d="M11.8189091,20.3167303 C17.6981818,16.5505143 20.6378182,12.5122542 20.6378182,8.20195014 C20.6378182,5.99719437 18.8550242,4 16.3283829,4 C13.4628072,4 10.284995,6.64162063 10.284995,8.70392731 C10.284995,10.0731789 10.8851209,10.9874447 11.8189091,10.9874447 C12.7526973,10.9874447 13.3528232,10.0731789 13.3528232,8.70392731 C13.3528232,6.64162063 10.1317157,4 7.30943526,4 C4.90236126,4 3,5.64715533 3,8.20195014 C3,12.5122346 5.93963637,16.5504946 11.8189091,20.3167303 Z"
-              ></path>
+                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                fill={liked ? '#ed4956' : '#ccc'}
+              />
             </svg>
-          </label>
+          </button>
         </div>
-        <div className="like-count"> Likes: {likes}</div>
+        <div className="post-like-count"> {numLikes}</div>
+        <div className="post-three-dot-menu">
+          { (currentUser.username === author) && <button onClick={toggleOptions} className="post-three-dot-button">⋮</button>}
+          {showMenu && (
+            <div className="post-dropdown-menu">
+              <button className="post-delete" onClick={onDelete}>Delete</button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
+
 Post.propTypes = {
+  photourlArray : PropTypes.array.isRequired,
   author: PropTypes.string.isRequired,
-  content: PropTypes.string.isRequired,
+  caption: PropTypes.string.isRequired,
   likes: PropTypes.number.isRequired,
+  postID: PropTypes.string.isRequired,
   onLike: PropTypes.func.isRequired,
   onComment: PropTypes.func.isRequired,
 };

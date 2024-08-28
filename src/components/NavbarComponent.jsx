@@ -39,7 +39,7 @@ const Navbar = () => {
           <div className='search-toggle'>🔍</div>
       </div>
       <div className='navitem'>
-        <img src={currentUser.profilePictureURL ? currentUser.profilePictureURL : "/blankprofile.png"} className='nav-pfp'></img>
+        <img src={(currentUser && currentUser.profilePictureURL) ? currentUser.profilePictureURL : "/blankprofile.png"} className='nav-pfp'></img>
       </div>
       {showSearch && <SearchComponent onClose={toggleSearch} isOpen={showSearch}/>}
     </div>

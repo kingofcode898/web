@@ -1,9 +1,10 @@
-import { addDoc, collection, getDoc, doc, query, where, getDocs, updateDoc, } from "firebase/firestore";
+import { addDoc, collection, getDoc, doc, query, where, getDocs, updateDoc, deleteDoc, } from "firebase/firestore";
 import { firestore, storage} from "../firebaseConfig";
 import { getStorage, ref, uploadBytesResumable,getDownloadURL } from "firebase/storage";
 
-// Import the user collection
+
 const userCollection = collection(firestore, "Users");
+const postCollection = collection(firestore, "Posts")
 
 // Adds user to the database
 export const addUserDb = async (username, email, password) => {
@@ -63,16 +64,7 @@ export const addFollow = async (currrentUsername, FollowUsername) => {
   }
 };
 
-export const addComment = async (postPath, comment) => {
-  try {
-    comment = addDoc(collection(firestore, postPath + '/Comments/'), comment);
-    return comment;
-  
-  } catch (error) {
-    console.error("error adding a comment: ", error.message)
-    throw error
-  }
-}
+
   
 
 /*function that is called when a user logs in. It finds the document that has the same 
@@ -123,53 +115,171 @@ export const addComment = async (postPath, comment) => {
     }
   };
   
-
-/*This function takes in the userEmail and finds their information based on that*/
-export const createPostinDB = async (userEmail, content) => {
+ /**
+ * This function takes in the user ID, caption, and an array of URLs that point to the photo content of the post.
+ *
+ * @param {string} userID - The ID of the user creating the post.
+ * @param {string} caption - The caption for the post.
+ * @param {Array<string>} photo_urls - An array of URLs pointing to the photo content of the post.
+ * @returns {Promise<string|undefined>} The ID of the created post, or undefined if an error occurs.
+ */
+export const createPostinDB = async (userID, caption, photo_urls,authorUsername) => {
   try {
-    const userDoc = await findUserWEmail(userEmail)
-    const userData = userDoc[1]
-    const userPostPath  = "Users/" + userDoc[0] + "/Posts"; 
-    let date_created = new Date(Date.now());
-    let formatted_date = date_created.toLocaleString();
+    const userRef = doc(firestore, "Users", userID);
+    
+    // Get the user's current data
+    const userSnapshot = await getDoc(userRef);
+    
+    if (userSnapshot.exists()) {
+      const userData = userSnapshot.data();
+      const newPost = {
+        userId: userID,
+        caption: caption,
+        photoUrls: photo_urls,
+        likes: 0,
+        commentsCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        num_key: (userData.posts_created || 0) + 1, 
+        author:authorUsername
+      };
+      // Increment the user's post count
+      await updateDoc(userRef, {
+        posts_created: (userData.posts_created || 0) + 1
+      });
+    } else {
+      console.error('User document not found');
+    }
 
-    const Post = await addDoc(collection(firestore, userPostPath), {
-        author: userData.username,
-        id: (parseInt(userData.posts_created) + 1), 
-        date_created: formatted_date,
-        content: content,
-        likes: 0, 
-        likedBy: [] 
-    })
-    updateDoc(doc(firestore,"Users/" + userDoc[0]), {
-      posts_created: parseInt(userData.posts_created) + 1
-    });
-    console.log("Post succesfully added to firestore database!");
+    
+    let result = await addDoc(postCollection, newPost);
 
-    return Post;
+    console.log('Post created and user post count updated successfully!');
+    return result.id;
   } catch (error) {
-    console.error('Error creating post in the database:', error.message);
-    throw error;
+    console.error('Error creating post or updating user post count:', error);
+  }
+};
+  export const uploadPostPicture = async (filename, file) => {
+    const storage = getStorage();
+  
+    // Add more file types if needed
+    const metadata = {
+      contentType: file.type // Dynamically set the content type based on the uploaded file
+    };
+  
+    // Set the path for storing the image in the 'PostPhotos' folder
+    const storageRef = ref(storage, `PostPhotos/${filename}`);
+    const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+  
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done`);
+          switch (snapshot.state) {
+            case 'paused':
+              console.log('Upload is paused');
+              break;
+            case 'running':
+              console.log('Upload is running');
+              break;
+          }
+        },
+        (error) => {
+          console.error('Error during upload:', error);
+          reject(error);
+        },
+        async () => {
+          try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            console.log('File available at', downloadURL);
+            resolve(downloadURL);  // Resolve with the download URL
+          } catch (error) {
+            console.error('Error getting download URL:', error);
+            reject(error);
+          }
+        }
+      );
+    });
+  };
+
+export const addComment = async (postId, userId, content) => {
+  try {
+    // Reference to the comments collection
+    const commentsRef = firestore.collection('comments');
+
+    // Create a new comment document with an auto-generated ID
+    const newComment = {
+      postId: postId,           
+      userId: userId,           
+      content: content,         
+      likes: 0,                 
+      createdAt: new Date(),    
+      updatedAt: new Date()    
+    };
+
+    // Add the comment to the collection
+    await commentsRef.add(newComment);
+    
+    // Optionally, you could update the comment count in the post document
+    const postRef = firestore.collection('posts').doc(postId);
+    await postRef.update({
+      commentsCount: firestore.FieldValue.increment(1)
+    });
+
+    console.log('Comment added successfully!');
+  } catch (error) {
+    console.error('Error adding comment:', error);
   }
 };
 
-/*  This function takes in the userID and the Id of the post, The UserID is the users
-    document in the database while the postID is what gets queryed for. The post ID
-    increment up from zero. There froer the most recent ones are the ones at the top 
-    of the list. */
-export const getPost = async (UserID, ID) => {
+export const deletePost = async (UserID, postID) => {
   try {
-      const UserPostsPath = "Users/" + UserID + "/Posts"
+    const postPath = `Users/${UserID}/Posts/${postID}`;
+    const postDoc = doc(firestore, postPath);
 
-      const q = query(
-        collection(firestore, UserPostsPath),
-        where("id", "==", ID)
-      );
-  
-      const result = await getDocs(q);
-      const postDoc = result[0]
-      console.log(postDoc.data())
-      return postDoc.data()
+    await deleteDoc(postDoc); 
+    
+    updateDoc(firestore, "Users/" + UserID )
+    
+    console.log("Post successfully deleted.");
+  } catch (error) {
+    console.error("Error deleting post:", error);
+  }
+};
+
+
+/**
+ * Retrieves a post by the author's username and the post's numerical key.
+ * 
+ * @param {string} authorUsername - The username of the post's author.
+ * @param {number} key - The numerical key of the post.
+ * @returns {Promise<Object|undefined>} The data of the post if found, or undefined if not found.
+ */
+export const getPost = async (authorUsername, key) => {
+  try {
+    const authorInfo =  await findUserWUsername(authorUsername) 
+    
+    const authorpfp = authorInfo[1].profilePictureUrl
+    
+    const q = query(
+      collection(firestore, "Posts"),
+      where("num_key", "==", key), 
+      where("author", "==", authorUsername)
+    );
+
+    const result = await getDocs(q);
+
+    // Ensure that there is at least one document in the result
+    if (!result.empty) {
+      const postDoc = result.docs[0]; // Access the first document
+      return [postDoc.id, postDoc.data(), authorpfp]
+    } else {
+      console.log('No post found with the given key and author.');
+      return undefined;
+    }
 
   } catch (error) {
     console.error('Error getting post:', error.message);
@@ -177,44 +287,15 @@ export const getPost = async (UserID, ID) => {
   }
 };
 
-export const getPostwUsername = async (username, postid) => {
-  try {
-    const userInfo = await findUserWUsername(username);
-    const UserPostsPath = "Users/" + userInfo[0] + "/Posts";
 
-    const q = query(
-      collection(firestore, UserPostsPath),
-      where("id", "==", postid)
+export const getUserPosts = async (userID) => {
+  try {
+
+    
+    const querySnapshot = query(
+      collection(firestore, "Posts"),
+      where("userID", "==", user)
     );
-
-    const result = await getDocs(q);
-    let postDoc = null;
-
-    result.forEach((doc) => {
-      postDoc = doc; // In case of multiple documents, it will store the last one
-    });
-
-    if (postDoc) {
-      return postDoc.data();
-    } else {
-      console.log("No post found with the specified ID");
-      return null;
-    }
-  } catch (error) {
-    console.error("Error getting post:", error.message);
-    throw error;
-  }
-};
-
-
-
-
-export const getUserPosts = async (userDocID) => {
-  try {
-    const userDocPath = "Users/" + userDocID
-
-    const userPostCollectionRef = collection(firestore, userDocPath + '/Posts');
-    const querySnapshot = await getDocs(query(userPostCollectionRef));
 
     const posts = [];
     
@@ -230,8 +311,17 @@ export const getUserPosts = async (userDocID) => {
   }
 };
 
-export const deletePost = (postid, userID) => {
-  const userPostCollection = userID
+/**
+ * Adds a like to the given post using the post document ID 
+ * @param {string} postID 
+ */
+export const addLikeToPost = async (postID) => {
+  const postRef = firestore.collection('Posts').doc(postID);
+  
+  // Increment the user's post count
+  await postRef.update({
+    likes: firestore.FieldValue.increment(1)
+  });
 }
 
 export const updateUserBio = (userID, newBio) => {
