@@ -41,7 +41,7 @@ function ProfileComponent() {
   
       const updatedUser = {
         ...currentUser,
-        profilePictureURL: url
+        profilePictureUrl: url
       };
   
       setCurrentUser(updatedUser);
@@ -92,7 +92,7 @@ function ProfileComponent() {
           <div className="profile-header">
             <img
               className="profile-picture"
-              src={currentUser.profilePictureURL ? currentUser.profilePictureURL : "/blankprofile.png"}
+              src={currentUser.profilePictureUrl ? currentUser.profilePictureUrl : "/blankprofile.png"}
               alt="Profile"
             />
             <div className="profile-details">

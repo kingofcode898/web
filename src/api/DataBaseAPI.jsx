@@ -1,6 +1,7 @@
 import { addDoc, collection, getDoc, doc, query, where, getDocs, updateDoc, deleteDoc, } from "firebase/firestore";
 import { firestore, storage} from "../firebaseConfig";
 import { getStorage, ref, uploadBytesResumable,getDownloadURL } from "firebase/storage";
+import Post from "../components/postComponent";
 
 
 const userCollection = collection(firestore, "Users");
@@ -64,9 +65,6 @@ export const addFollow = async (currrentUsername, FollowUsername) => {
   }
 };
 
-
-  
-
 /*function that is called when a user logs in. It finds the document that has the same 
   the same email as the provided one in the login */
   export const findUserWEmail = async (email) => {
@@ -125,14 +123,13 @@ export const addFollow = async (currrentUsername, FollowUsername) => {
  */
 export const createPostinDB = async (userID, caption, photo_urls,authorUsername) => {
   try {
-    const userRef = doc(firestore, "Users", userID);
+    const userRef = doc(firestore, "Users/" + userID);
     
     // Get the user's current data
     const userSnapshot = await getDoc(userRef);
+    const userData = userSnapshot.data();
     
-    if (userSnapshot.exists()) {
-      const userData = userSnapshot.data();
-      const newPost = {
+    const newPost = {
         userId: userID,
         caption: caption,
         photoUrls: photo_urls,
@@ -147,9 +144,7 @@ export const createPostinDB = async (userID, caption, photo_urls,authorUsername)
       await updateDoc(userRef, {
         posts_created: (userData.posts_created || 0) + 1
       });
-    } else {
-      console.error('User document not found');
-    }
+    
 
     
     let result = await addDoc(postCollection, newPost);
@@ -313,15 +308,31 @@ export const getUserPosts = async (userID) => {
 
 /**
  * Adds a like to the given post using the post document ID 
- * @param {string} postID 
+ * @param {string} postID - the id for the post 
+ * @param {boolean} add - the add or subtract  
  */
 export const addLikeToPost = async (postID) => {
-  const postRef = firestore.collection('Posts').doc(postID);
+  const postRef = doc(firestore, "Posts/" + postID);
+      
+    // Get the user's current data
+    const postInfo = await getDoc(postRef); 
   
-  // Increment the user's post count
-  await postRef.update({
-    likes: firestore.FieldValue.increment(1)
-  });
+    updateDoc(postRef, {
+      likes : postInfo.data().likes + 1
+    })
+ 
+}
+export const removeLikeToPost = async (postID ) => {
+  const postRef = doc(firestore, "Posts/" + postID);
+      
+    // Get the user's current data
+    const postInfo = await getDoc(postRef); 
+  
+  
+    updateDoc(postRef, {
+      likes : postInfo.data().likes - 1})
+
+  
 }
 
 export const updateUserBio = (userID, newBio) => {
@@ -381,3 +392,4 @@ export const uploadProfilePicture = async (filename, file, userDocPath) => {
     );
   });
 };
+

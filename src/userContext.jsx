@@ -12,7 +12,18 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   
   const onRefresh = async () =>{
-      const userInfo = JSON.parse(localStorage.getItem("user-info"))
+      let userInfo = JSON.parse(localStorage.getItem("user-info"))
+
+      
+      let result = await findUserWEmail(userInfo.email)
+
+       userInfo  = {
+      ...result[1], 
+      id: result[0]
+      }
+
+      console.log(userInfo)
+
       setCurrentUser(userInfo)
 
   }

@@ -60,7 +60,7 @@ const HomePageComponent = () => {
 
   
   const CreateNewPost = async (PostContent) => {
-    let _id = await createPostinDB(currentUser.ID, PostContent.caption, PostContent.photo_urls,currentUser.username);
+    let _id = await createPostinDB(currentUser.id, PostContent.caption, PostContent.photo_urls,currentUser.username);
 
     const newPost = {
       author: currentUser.username,
@@ -143,7 +143,7 @@ const HomePageComponent = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar toggleCreatePost={toggleCreatePost}/>
       <div className="home-page">
         <div className="feed-container">
           {createPost && <CreatePost onClose={toggleCreatePost} onSubmit={CreateNewPost} />}
@@ -153,14 +153,6 @@ const HomePageComponent = () => {
             {hasMorePosts && <button className="load-more-post-bttn" onClick={retrieveNextPost}>{isLoading ? "Loading"  : "Load more" }</button>}
           </div>
         </div>
-
-        {currentUser && (
-          <div className="new-post-container">
-            <button className="new-post" onClick={toggleCreatePost}>
-              Create Post? 👀
-            </button>
-          </div>
-        )}
 
         {!currentUser && (
           <div className="login-btn-home">

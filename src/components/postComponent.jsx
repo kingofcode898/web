@@ -5,39 +5,32 @@ import "../Sass/Post.scss";
 import { useAuth } from "../userContext";
 import { useState } from "react";
 
-const Post = ({  author,  caption,  likes,  onLike, onComment, timestamp, authorpfp, postID, onDelete, photourlArray}) => 
-{
-  const {currentUser} = useAuth()
+const Post = ({ author, caption, likes, onLike, onComment, timestamp, authorpfp, postID, onDelete, photourlArray, onRemoveLike}) => {
+  const { currentUser } = useAuth()
 
-  const [showMenu, setShowMenu ] = useState(false); 
+  const [showMenu, setShowMenu] = useState(false);
   const [liked, setLiked] = useState(false); // State to track if the post is liked
-  const [numLikes, setNumLikes] = useState(0)
+  const [numLikes, setNumLikes] = useState(likes)
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(()=>{
-    setNumLikes(likes)
-  },[])
 
   const toggleOptions = () => {
     setShowMenu(!showMenu)
   }
 
   const handleLike = () => {
-    
+    setNumLikes((prevNumLikes) => prevNumLikes + (liked ? -1 : 1));
+
     if(liked){
-      setNumLikes(numLikes - 1)
-    } else{
-      setNumLikes( numLikes + 1)
+      onRemoveLike(postID)
+    }else{
+      onLike(postID)
     }
-
-    setLiked(!liked); 
-  
-    onLike(postID); 
-
+    setLiked(!liked)
+    
   };
 
   const handleComment = () => {
-      onComment()
+    onComment()
   }
 
   const goToNext = () => {
@@ -45,7 +38,7 @@ const Post = ({  author,  caption,  likes,  onLike, onComment, timestamp, author
   };
 
   const goToPrevious = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + (photourlArray.length )) % (photourlArray.length ));
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + (photourlArray.length)) % (photourlArray.length));
   };
 
   return (
@@ -56,34 +49,33 @@ const Post = ({  author,  caption,  likes,  onLike, onComment, timestamp, author
         <p>{timestamp}</p>
       </div>
       <div className="post-photo-carousel">
-            <div className="post-carousel">
-                <>
-                  <img
-                    src={photourlArray[currentIndex]}
-                    alt={`Preview ${currentIndex + 1}`}
-                    className="post-carousel-image"
-                  />
-                </>
-                <>
-                  <button
-                    type="button"
-                    className="post-carousel-button prev"
-                    onClick={goToPrevious}
-                    aria-label="Previous Image"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    type="button"
-                    className="post-carousel-button next"
-                    onClick={goToNext}
-                    aria-label="Next Image"
-                  >
-                    ›
-                  </button>
-                </>
-            </div>
-          </div>
+        <div className="post-carousel">
+          <img
+            src={photourlArray[currentIndex]}
+            alt={`Preview ${currentIndex + 1}`}
+            className="post-carousel-image"
+          />
+          {photourlArray.length > 1 && <>
+            <button
+              type="button"
+              className="post-carousel-button prev"
+              onClick={goToPrevious}
+              aria-label="Previous Image"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              className="post-carousel-button next"
+              onClick={goToNext}
+              aria-label="Next Image"
+            >
+              ›
+            </button>
+          </>}
+
+        </div>
+      </div>
       <div className="post-caption">
         <p>{caption}</p>
       </div>
@@ -106,7 +98,7 @@ const Post = ({  author,  caption,  likes,  onLike, onComment, timestamp, author
         </div>
         <div className="post-like-count"> {numLikes}</div>
         <div className="post-three-dot-menu">
-          { (currentUser.username === author) && <button onClick={toggleOptions} className="post-three-dot-button">⋮</button>}
+          {(currentUser.username === author) && <button onClick={toggleOptions} className="post-three-dot-button">⋮</button>}
           {showMenu && (
             <div className="post-dropdown-menu">
               <button className="post-delete" onClick={onDelete}>Delete</button>
@@ -120,7 +112,7 @@ const Post = ({  author,  caption,  likes,  onLike, onComment, timestamp, author
 
 
 Post.propTypes = {
-  photourlArray : PropTypes.array.isRequired,
+  photourlArray: PropTypes.array.isRequired,
   author: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   likes: PropTypes.number.isRequired,
