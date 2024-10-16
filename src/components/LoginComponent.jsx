@@ -86,6 +86,7 @@ export default function LoginComponent() {
           placeholder="Password"
           onKeyDown={handleEnterKey}
         />
+      
         <button onClick={loginUsr} className="login-btn">
           Log in
         </button>
@@ -96,9 +97,6 @@ export default function LoginComponent() {
         <Link className="link" to="/signup">
           Create an account
         </Link>
-        <div className="test">
-          <div className="test2"></div>
-        </div>
       </div>
     </div>
   );

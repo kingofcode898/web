@@ -1,7 +1,8 @@
-import { addDoc, collection, getDoc, doc, query, where, getDocs, updateDoc, deleteDoc, } from "firebase/firestore";
+import { addDoc, collection, getDoc, doc, query, where, getDocs, updateDoc, deleteDoc, orderBy, limit } from "firebase/firestore";
 import { firestore, storage} from "../firebaseConfig";
-import { getStorage, ref, uploadBytesResumable,getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytesResumable,getDownloadURL ,deleteObject} from "firebase/storage";
 import Post from "../components/postComponent";
+import { Timestamp } from "firebase/firestore";
 
 
 const userCollection = collection(firestore, "Users");
@@ -230,49 +231,78 @@ export const addComment = async (postId, userId, content) => {
   }
 };
 
-export const deletePost = async (UserID, postID) => {
+export const deletePost = async (postID,userId) => {
   try {
-    const postPath = `Users/${UserID}/Posts/${postID}`;
-    const postDoc = doc(firestore, postPath);
+    const postPath = `Posts/${postID}`;
+    const postDocRef = doc(firestore, postPath);
 
-    await deleteDoc(postDoc); 
+    const userDoc= doc(firestore, `Users/${user}`)
     
-    updateDoc(firestore, "Users/" + UserID )
+    // Get the post document
+    const postSnapshot = await getDoc(postDocRef);
     
-    console.log("Post successfully deleted.");
+    if (!postSnapshot.exists()) {
+      throw new Error("Post not found.");
+    }
+
+    const postData = postSnapshot.data();
+    const photoUrls = postData.photoUrls; // Assuming 'photos' is the array of URLs
+
+    const getStoragePathFromUrl = (url) => {
+      const startIndex = url.indexOf("/o/") + 3;
+      const endIndex = url.indexOf("?alt=");
+      return decodeURIComponent(url.substring(startIndex, endIndex));
+    };
+
+    
+    const deletePhotoPromises = photoUrls.map(async (url) => {
+      const storagePath = getStoragePathFromUrl(url); // Extract the storage path
+      const photoRef = ref(storage, storagePath); // Get the reference to the file
+      await deleteObject(photoRef).then(() => {
+        console.log("Photo deleted: " + storagePath)
+      }).catch((error) =>{
+        console.log("Error deleting the photo" + error)
+      }); // Delete the file
+    });
+
+    // Wait for all photos to be deleted
+    await Promise.all(deletePhotoPromises);
+
+    // Now delete the post document
+    await deleteDoc(postDocRef);
+
+  
+
+    console.log("Post and associated photos successfully deleted.");
   } catch (error) {
-    console.error("Error deleting post:", error);
+    console.error("Error deleting post or photos:", error);
   }
 };
 
-
-/**
- * Retrieves a post by the author's username and the post's numerical key.
- * 
- * @param {string} authorUsername - The username of the post's author.
- * @param {number} key - The numerical key of the post.
- * @returns {Promise<Object|undefined>} The data of the post if found, or undefined if not found.
- */
-export const getPost = async (authorUsername, key) => {
+export const getPost = async (authorUsername, timestamp) => {
   try {
-    const authorInfo =  await findUserWUsername(authorUsername) 
-    
-    const authorpfp = authorInfo[1].profilePictureUrl
-    
+    const authorInfo = await findUserWUsername(authorUsername);
+    const authorpfp = authorInfo[1].profilePictureUrl;
+
+    const timestampFirestore = Timestamp.fromMillis(timestamp)
+
+    console.log(timestampFirestore)
+
     const q = query(
       collection(firestore, "Posts"),
-      where("num_key", "==", key), 
-      where("author", "==", authorUsername)
+      where("author", "==", authorUsername),
+      where("createdAt", "<=",timestampFirestore ), // Ensure timestamp is a Date object
+      orderBy("createdAt", "desc"), // Order by timestamp descending
+      limit(1)
     );
 
     const result = await getDocs(q);
 
-    // Ensure that there is at least one document in the result
     if (!result.empty) {
-      const postDoc = result.docs[0]; // Access the first document
-      return [postDoc.id, postDoc.data(), authorpfp]
+      const postDoc = result.docs[0];
+      return [postDoc.id, postDoc.data(), authorpfp];
     } else {
-      console.log('No post found with the given key and author.');
+      console.log('No post found before the given timestamp for the author.');
       return undefined;
     }
 
@@ -282,22 +312,23 @@ export const getPost = async (authorUsername, key) => {
   }
 };
 
-
 export const getUserPosts = async (userID) => {
   try {
-
-    
-    const querySnapshot = query(
+    // Create a query to get posts where the userId matches
+    const q = query(
       collection(firestore, "Posts"),
-      where("userID", "==", user)
+      where("userId", "==", userID), // Ensure this matches the field name exactly
+      orderBy("createdAt", "desc")   // Order posts by creation date in descending order
     );
 
-    const posts = [];
-    
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      posts.push({ ...data });
-    });
+    // Execute the query
+    const querySnapshot = await getDocs(q);
+
+    // Map through the documents and collect the data into an array
+    const posts = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
     return posts;
   } catch (error) {
@@ -305,35 +336,58 @@ export const getUserPosts = async (userID) => {
     throw error;
   }
 };
-
 /**
- * Adds a like to the given post using the post document ID 
- * @param {string} postID - the id for the post 
- * @param {boolean} add - the add or subtract  
+ * Toggles the like status of a post for a given user. If the user has already liked the post,
+ * it will remove the like (unlike). If the user has not liked the post yet, it will add a like.
+ * 
+ * The function performs the following actions:
+ * 1. Checks whether the user has already liked the post by querying the `Likes` collection.
+ * 2. If the user has liked the post, it removes the like and decrements the post's like count.
+ * 3. If the user has not liked the post, it adds a new like entry and increments the post's like count.
+ * 
+ * @param {string} postID - The unique identifier of the post being liked/unliked.
+ * @param {string} userID - The unique identifier of the user performing the like/unlike action.
+ * 
+ * @throws Will throw an error if there is an issue accessing the database or updating records.
+ * 
+ * @example
+ * // Example usage:
+ * toggleLike("12345", "user_abc")
+ *   .then(() => console.log("Like toggled successfully"))
+ *   .catch((error) => console.error("Error toggling like:", error));
+ * 
+ * @returns {Promise<void>} A promise that resolves when the like/unlike operation is complete.
  */
-export const addLikeToPost = async (postID) => {
-  const postRef = doc(firestore, "Posts/" + postID);
-      
-    // Get the user's current data
-    const postInfo = await getDoc(postRef); 
-  
-    updateDoc(postRef, {
-      likes : postInfo.data().likes + 1
-    })
- 
-}
-export const removeLikeToPost = async (postID ) => {
-  const postRef = doc(firestore, "Posts/" + postID);
-      
-    // Get the user's current data
-    const postInfo = await getDoc(postRef); 
-  
-  
-    updateDoc(postRef, {
-      likes : postInfo.data().likes - 1})
+export const toggleLike = async (postID, userID) => {
+  try {
+    const likesDocRef = doc(firestore, `Likes/${postID}_${userID}`); // Use a composite ID for like tracking
+    const postDocRef = doc(firestore, `Posts/${postID}`);
 
-  
-}
+    const likeSnapshot = await getDoc(likesDocRef);
+    
+    if (likeSnapshot.exists()) {
+      // User has already liked the post, so we unlike it
+      await deleteDoc(likesDocRef); // Remove like record
+      await updateDoc(postDocRef, {
+        likesCount: increment(-1)  // Decrease like count
+      });
+      console.log("Post unliked.");
+    } else {
+      // User has not liked the post, so we like it
+      await re(likesDocRef, {
+        userID: userID,
+        postID: postID,
+        timestamp: new Date().toISOString()
+      });
+      await updateDoc(postDocRef, {
+        likesCount: increment(1)  // Increase like count
+      });
+      console.log("Post liked.");
+    }
+  } catch (error) {
+    console.error("Error toggling like:", error);
+  }
+};
 
 export const updateUserBio = (userID, newBio) => {
   const userRef = doc(firestore, 'Users/'+ userID)

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Sass/Profile.scss';
 import Navbar from './NavbarComponent';
 import { useAuth } from '../userContext';
-import { uploadProfilePicture, updateUserBio } from '../api/DataBaseAPI';
+import { uploadProfilePicture, updateUserBio, getUserPosts } from '../api/DataBaseAPI';
+import ProfilePostComponent from './ProfilePostComponent';
 import { Link } from 'react-router-dom';
 
 function ProfileComponent() {
@@ -13,6 +14,21 @@ function ProfileComponent() {
   const [uploadMessage, setUploadMessage] = useState('');
   const [showBioInput, setShowBioInput] = useState(false);
   const [newBio, setNewBio] = useState(currentUser?.bio || "");
+  const [userPosts, setUserPosts] = useState([]); 
+
+  useEffect(() => {
+    if (currentUser) {
+      const fetchPosts = async () => {
+        try {
+          const posts = await getUserPosts(currentUser.id);
+          setUserPosts(posts);
+        } catch (error) {
+          console.error('Error fetching user posts:', error);
+        }
+      };
+      fetchPosts();
+    }
+  }, [currentUser]);
 
   const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
@@ -31,24 +47,23 @@ function ProfileComponent() {
       console.error("File or username is not defined");
       return;
     }
-  
+
     const fileExtension = file.name.split('.').pop();
     const filename = `${currentUser.username}_profile_pic.${fileExtension}`;
-  
+
     try {
-      const url = await uploadProfilePicture(filename, file, currentUser.ID); // Wait for the upload to complete
+      const url = await uploadProfilePicture(filename, file, currentUser.ID);
       setUploadMessage('File uploaded successfully!');
-  
+
       const updatedUser = {
         ...currentUser,
-        profilePictureUrl: url
+        profilePictureUrl: url,
       };
-  
+
       setCurrentUser(updatedUser);
-  
+
       const userInfoString = JSON.stringify(updatedUser);
       localStorage.setItem("user-info", userInfoString);
-  
     } catch (error) {
       console.error('Error during the file upload process:', error);
     }
@@ -58,12 +73,12 @@ function ProfileComponent() {
 
   const toggleProfilePicChanger = () => {
     setShowPFPChanger(!showPFPChanger);
-    setShowMenu(false); // Close the menu when this option is selected
+    setShowMenu(false);
   };
 
   const toggleBioInput = () => {
     setShowBioInput(!showBioInput);
-    setShowMenu(false); // Close the menu when this option is selected
+    setShowMenu(false);
   };
 
   const handleBioChange = (event) => setNewBio(event.target.value);
@@ -77,7 +92,7 @@ function ProfileComponent() {
     updateUserBio(currentUser.ID, newBio);
     const updatedUser = {
       ...currentUser,
-      bio: newBio
+      bio: newBio,
     };
     setCurrentUser(updatedUser);
     const userInfoString = JSON.stringify(updatedUser);
@@ -104,7 +119,6 @@ function ProfileComponent() {
               </div>
               <p className="bio">{currentUser.bio || "Add a bio..."}</p>
 
-              {/* Three-dot menu */}
               <div className="three-dot-menu">
                 <button onClick={toggleMenu} className="three-dot-button">⋮</button>
                 {showMenu && (
@@ -127,7 +141,7 @@ function ProfileComponent() {
                   <button onClick={saveBio} className="save-bio-bttn">Save</button>
                 </div>
               )}
-              
+
               {showPFPChanger && (
                 <div className="profile-actions">
                   <input
@@ -144,7 +158,22 @@ function ProfileComponent() {
           <div className="profile-content">
             <h2>User Posts</h2>
             <div className="posts-grid">
-              {/* The user posts will be mapped and displayed here when the photo part is done */}
+              {userPosts.map((post) => (
+                <ProfilePostComponent
+                  key={post.id}
+                  author={post.author}
+                  caption={post.caption}
+                  likes={post.likes}
+                  onLike={(postID) => console.log(`Liked post ${postID}`)}
+                  onComment={() => console.log('Commented')}
+                  timestamp={new Date(post.createdAt.seconds * 1000).toLocaleDateString()}
+                  authorpfp={post.authorpfp}
+                  postID={post.id}
+                  onDelete={() => console.log(`Deleted post ${post.id}`)}
+                  photourlArray={post.photoUrls}
+                  onRemoveLike={(postID) => console.log(`Removed like from post ${postID}`)}
+                />
+              ))}
             </div>
           </div>
         </div>

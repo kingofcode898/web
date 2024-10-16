@@ -12,8 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   
   const onRefresh = async () =>{
-      let userInfo = JSON.parse(localStorage.getItem("user-info"))
-
+      let userInfo = JSON.parse(localStorage.getItem("user-info")) 
       
       let result = await findUserWEmail(userInfo.email)
 

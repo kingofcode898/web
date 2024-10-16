@@ -1,55 +1,4 @@
-/* Profile.scss */
-.three-dot-menu {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  border-radius: 10px;
-  transition: background-color 0.3s ease; /* Adjust the duration and easing function as needed */
-  
-  &:hover {
-    background-color: #dbdada;
-  }
-}
-
-.three-dot-button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  
-
-}
-
-.dropdown-menu {
-  position: absolute;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  border-radius: 8px; /* Add rounded corners */
-  overflow: hidden; /* Ensure the dropdown is properly contained */
-  min-width: 200px;
-}
-
-.dropdown-menu button {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-}
-
-.dropdown-menu button:hover {
-  background: #f0f0f0;
-}
-
-/* Main Profile Page Styles */
+/* Profile Styles */
 .profile-page {
   display: flex;
   flex-direction: column;
@@ -57,26 +6,25 @@
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
   color: #333;
-  position: relative; /* Ensure the three-dot menu positions correctly relative to the profile page */
+  font-family: Arial, sans-serif;
 }
 
 .profile-header {
   display: flex;
   align-items: center;
   width: 100%;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   border-bottom: 1px solid #dbdbdb;
   padding-bottom: 20px;
-  position: relative; 
+  position: relative;
 
   .profile-picture {
     width: 150px;
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    margin-right: 30px;
+    margin-right: 20px;
     border: 2px solid #ddd;
   }
 
@@ -84,7 +32,7 @@
     flex-grow: 1;
 
     .username {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: bold;
       margin-bottom: 5px;
       color: #262626;
@@ -93,73 +41,88 @@
     .stats {
       display: flex;
       gap: 20px;
-      font-size: 16px;
+      font-size: 14px;
+      color: #8e8e8e;
       margin-bottom: 10px;
-
-      span {
-        font-weight: 600;
-        color: #8e8e8e;
-      }
     }
 
     .bio {
       font-size: 14px;
-      margin-bottom: 15px;
       color: #333;
       line-height: 1.4;
+      margin-bottom: 10px;
     }
 
-    .profile-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-
-      }
-
-      .upload-input {
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-        margin-top: 10px;
-      }
-
-      .upload-message {
-        font-size: 12px;
-        color: green;
-      }
-    }
+    .profile-actions,
     .bio-input-container {
       display: flex;
       gap: 10px;
-      max-width: 300px;
-      align-items: center;
-
-      .bio-input {
-        flex-grow: 1;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-      }
-    }
-    .save-bio-bttn{
-      height: 32px ;
-      width: 70px; 
-
+      flex-direction: column;
+      margin-top: 10px;
     }
 
+    .upload-input,
+    .bio-input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .upload-message {
+      font-size: 12px;
+      color: green;
+    }
+
+    .save-bio-bttn {
+      height: 32px;
+      width: 70px;
+    }
+  }
 }
 
+.three-dot-menu,
+.dropdown-menu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
 
+.three-dot-button,
+.dropdown-menu button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  width: 100%;
+  padding: 8px;
+}
+
+.dropdown-menu {
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-menu button:hover,
+.three-dot-menu:hover {
+  background: #f0f0f0;
+}
+
+/* Profile Content */
 .profile-content {
   width: 100%;
 
   h2 {
-    font-size: 22px;
-    margin-bottom: 20px;
-    text-align: left;
-    width: 100%;
+    font-size: 20px;
+    margin-bottom: 10px;
     color: #262626;
   }
 
@@ -169,41 +132,40 @@
     gap: 10px;
 
     .post-item {
-      width: 100%;
-      padding-bottom: 100%;
       background-color: #fafafa;
       border: 1px solid #dbdbdb;
       border-radius: 4px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.3s, box-shadow 0.3s;
+      aspect-ratio: 1;
 
       &:hover {
         transform: scale(1.05);
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       }
     }
   }
 }
 
+/* Side Screen */
 .side-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
   color: #262626;
+  text-align: center;
 
   p {
-    font-size: 18px;
+    font-size: 16px;
     margin-bottom: 10px;
     color: #8e8e8e;
-    text-align: center;
   }
 
   .link {
     color: #0095f6;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 14px;
 
     &:hover {
       text-decoration: underline;
@@ -211,31 +173,15 @@
   }
 }
 
-/* Media Queries for Responsiveness */
+/* Media Queries */
 @media (max-width: 768px) {
   .profile-header {
     flex-direction: column;
-    align-items: center;
     text-align: center;
-
     .profile-picture {
-      margin-right: 0;
-      margin-bottom: 20px;
-    }
-
-    .profile-details {
-      align-items: center;
-
-      .username {
-        font-size: 22px;
-      }
-
-      .stats {
-        justify-content: center;
-      }
+      margin: 0 0 15px;
     }
   }
-
   .posts-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -244,20 +190,5 @@
 @media (max-width: 480px) {
   .posts-grid {
     grid-template-columns: 1fr;
-  }
-
-  .profile-header {
-    padding-bottom: 10px;
-
-    .profile-details {
-      .username {
-        font-size: 20px;
-      }
-
-      .stats {
-        flex-direction: column;
-        gap: 5px;
-      }
-    }
   }
 }

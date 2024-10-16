@@ -19,14 +19,7 @@ const Post = ({ author, caption, likes, onLike, onComment, timestamp, authorpfp,
 
   const handleLike = () => {
     setNumLikes((prevNumLikes) => prevNumLikes + (liked ? -1 : 1));
-
-    if(liked){
-      onRemoveLike(postID)
-    }else{
-      onLike(postID)
-    }
-    setLiked(!liked)
-    
+    onLike(postID)
   };
 
   const handleComment = () => {
@@ -41,6 +34,9 @@ const Post = ({ author, caption, likes, onLike, onComment, timestamp, authorpfp,
     setCurrentIndex((prevIndex) => (prevIndex - 1 + (photourlArray.length)) % (photourlArray.length));
   };
 
+  const handleDelete = () => {
+    onDelete()
+  }
   return (
     <div className="post">
       <div className="post-header">
@@ -101,7 +97,7 @@ const Post = ({ author, caption, likes, onLike, onComment, timestamp, authorpfp,
           {(currentUser.username === author) && <button onClick={toggleOptions} className="post-three-dot-button">⋮</button>}
           {showMenu && (
             <div className="post-dropdown-menu">
-              <button className="post-delete" onClick={onDelete}>Delete</button>
+              <button className="post-delete" onClick={handleDelete}>Delete</button>
             </div>
           )}
         </div>

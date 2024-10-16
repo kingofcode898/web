@@ -1,21 +1,14 @@
 import React from 'react';
 import Post from './postComponent';
-import { addComment, addLikeToPost, removeLikeToPost } from '../api/DataBaseAPI';
+import { addComment, toggleLike } from '../api/DataBaseAPI';
 import { useAuth } from '../userContext';
 
-const Feed = ({ postList }) => {
+const Feed = ({ postList, handleDeletePost }) => {
 
   const {currentUser} = useAuth(); 
 
   const handleLike = (postId) => {
-
-    addLikeToPost(postId)
-    console.log("The post has been liked");
-  };
-
-  const handleRemoveLike = (postId) => {
-    removeLikeToPost(postId); 
-    console.log("The post has had a like removed");
+    toggleLike(postId, currentUser.id); 
   }
 
   const handleComment = (postId, comment) => {
@@ -37,7 +30,7 @@ const Feed = ({ postList }) => {
           onLike={() => handleLike(post.id)}
           photourlArray={post.photoUrls}
           onComment={(comment) => handleComment(post.id, comment)}
-          onRemoveLike = {() => handleRemoveLike(post.id)}
+          onDelete={()=> handleDeletePost(post.id)}
         />
       ))}
     </div>

@@ -5,7 +5,7 @@
   background-color: #ffffff;
   color: #000; /* Changed to black for text readability */
   padding: 10px;
-  width: 100px;
+  width: clamp(50px, 10%, 100px);
   height: 100vh;
   margin: 0;
   border-right: 1px solid rgb(219, 219, 219);
@@ -20,20 +20,20 @@
   text-align: center;
   transition: background-color 0.3s ease;
   border-radius: 5px;
-
+  
   &:hover {
     background-color: #f0f0f0;
   }
 }
 
 .navText {
-  display: block;
+display: block;
   font-size: 12px;
   margin-top: 5px;
   color: #000; /* Set text color */
 }
 
-.Logo {
+.nav-Logo {
   width: 50px;
   padding: 0;
   margin-bottom: 40px;
@@ -44,38 +44,17 @@
 }
 
 .nav-pfp {
-  padding: 100px 0;
   width: 40px;
   height: 40px;
   border-radius: 50%;
   text-align: center;
   transition: background-color 0.3s ease;
 
-  &:hover {
-    background-color: #f0f0f0;
-  }
 }
 
-@media (max-width: 1024px) {
-  .navbar {
-    display: flex;
-    flex-direction: column; /* Stack items vertically */
-    align-items: center;
-    background-color: #ffffff;
-    color: #000; /* Changed to black for text readability */
-    padding: 10px;
-    width: 50px;
-    height: 100vh;
-    margin: 0;
-    border-right: 1px solid rgb(219, 219, 219);
-    position: fixed;
-    left: 0;
-    z-index: 5;
-  }
-  
-}
 
-@media (max-width: 768px) {
+
+@media (max-width: 680px) {
   .navbar {
     width: 100%;
     height: 50px;
@@ -87,7 +66,7 @@
     right: 0;
   }
 
-  .Logo {
+  .nav-Logo {
     display: none;
   }
 
