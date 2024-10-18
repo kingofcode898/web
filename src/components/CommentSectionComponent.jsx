@@ -1,19 +1,16 @@
 import React from 'react'
-import { useEffect, use } from 'react'
+import { useEffect } from 'react'
+import  
 
-
-function CommentSectionComponent(postID) {
+const CommentSectionComponent = (postID)  => {  
     
-
-    const loadComments = () => {
-
-    }
+  const Commentlist = 
 
   return (
     <>
-      {}  
+      {}
     </>
   )
-}
+}; 
 
-export default CommentSectionComponent
+export default CommentSectionComponent; 

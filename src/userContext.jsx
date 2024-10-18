@@ -1,7 +1,7 @@
 // userContext.jsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from './firebaseConfig';
-import { findUserWEmail } from './api/DataBaseAPI';
+import { findUserByEmail  } from './api/DataBaseAPI';
 
 const AuthContext = createContext();
 
@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const onRefresh = async () =>{
       let userInfo = JSON.parse(localStorage.getItem("user-info")) 
       
-      let result = await findUserWEmail(userInfo.email)
+      let result = await  findUserByEmail (userInfo.email)
 
        userInfo  = {
       ...result[1], 

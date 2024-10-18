@@ -1,14 +1,14 @@
 .search-component {
   position: fixed;
   top: 0;
-  left: -300px; /* Initially off-screen */
+  left: 90px; /* Initially off-screen to the left */
   width: 300px;
   height: 100vh;
   background-color: white;
   padding: 20px;
   border-radius: 0 5px 5px 0;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 50;
+  z-index: 2;
   transform: translateX(-100%); /* Start off-screen */
   animation: slideOut 0.3s forwards; /* Default to slide out */
 
@@ -18,20 +18,19 @@
 
   @keyframes slideIn {
     from {
-      transform: translateX(10%); /* Start off-screen */
+      transform: translateX(-100%); /* Start off-screen */
     }
     to {
-      transform: translateX(108%); /* End at the final position */
+      transform: translateX(0); /* End at the final position */
     }
   }
 
   @keyframes slideOut {
     from {
-      transform: translateX(108%); /* Start at the final position */
-
+      transform: translateX(0); /* Start at the final position */
     }
     to {
-      transform: translateX(0); /* End off-screen */
+      transform: translateX(-100%); /* End off-screen */
     }
   }
 
@@ -45,6 +44,7 @@
       border: 1px solid #ccc;
       border-radius: 4px;
       margin-bottom: 10px;
+      margin-top: 10px;
     }
 
     button {
@@ -69,5 +69,49 @@
     border: none;
     font-size: 16px;
     cursor: pointer;
+  }
+}
+
+/* Media query for screens 768px or smaller */
+@media (max-width: 768px) {
+  .search-component {
+    top: auto;
+    bottom: 8vh; /* Initially off-screen at the bottom */
+    left: 0;
+    width: 94%;    /* Full width of the viewport */
+    height: 87vh;   /* Full height of the viewport */
+    border-radius: 0; /* Remove border-radius for full-screen */
+    box-shadow: 0px -4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(100%); /* Start off-screen at the bottom */
+    animation: slideDown 0.3s forwards; /* Default to slide down */
+    z-index: 2;
+
+    &.open {
+      animation: slideUp 0.3s forwards; /* Slide up when open */
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%); /* Start off-screen at the bottom */
+      }
+      to {
+        transform: translateY(0);    /* End at the final position (visible) */
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(0);    /* Start at the visible position */
+      }
+      to {
+        transform: translateY(100%); /* End off-screen at the bottom */
+      }
+    }
+
+    /* Adjust the close button position */
+    .close-button {
+      top: 10px;
+      right: 10px;
+    }
   }
 }

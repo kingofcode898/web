@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import '../Sass/SearchComponent.scss';
-import { findUserWUsername , addFollow } from '../api/DataBaseAPI';
+import { findUserByUsername , addFollow } from '../api/DataBaseAPI';
 import SearchResultPComponent from './SearchResultPComponent';
 import { useAuth } from '../userContext';
 
@@ -14,7 +14,7 @@ const SearchComponent = ({ onClose, isOpen }) => {
     e.preventDefault();
     try {
       console.log(`Searching for: ${searchQuery}`);
-      let user = await findUserWUsername(searchQuery);
+      let user = await findUserByUsername(searchQuery);
       setSearchResult(user[1]); // Store the search result in state
     } catch (error) {
       console.error(error);

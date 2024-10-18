@@ -5,7 +5,8 @@ import Feed from "./FeedComponent";
 import "../Sass/Home.scss";
 import { Link } from "react-router-dom";
 import { useAuth } from "../userContext";
-import { createPostinDB,  getPost ,deletePost} from "../api/DataBaseAPI";
+import { createPostInDB,  getPost ,deletePost} from "../api/DataBaseAPI";
+
 
 const HomePageComponent = () => {
   const { currentUser } = useAuth();
@@ -54,8 +55,8 @@ const HomePageComponent = () => {
   const toggleCreatePost = () => setCreatePost(!createPost);
 
   const CreateNewPost = async (PostContent) => {
-    let _id = await createPostinDB(
-      currentUser.id,
+    let _id = await createPostInDB(
+      currentUser.id ? currentUser.id : currentUser.ID,
       PostContent.caption,
       PostContent.photo_urls,
       currentUser.username
@@ -101,18 +102,25 @@ const HomePageComponent = () => {
       for (let i = 0; i < amount; i++) {
         let person = followingArray.current[index];
         let attempts = 0;
+
+        //while we still have users
         while (attempts < followingArray.current.length) {
+          
+          //if the followed person has posts to display
           if (person && updatedPostMap[person] !== 0) {
             console.log("This is the seconds:", updatedPostMap[person] )
+            
             let newPost = await getPost(person, updatedPostMap[person]);
-            if (newPost) {
-              updatedPostMap[person] =( newPost[1].createdAt.seconds * 1000)
+            
+            if (newPost) 
+            {
+              updatedPostMap[person] =( newPost.postData.createdAt.seconds * 1000)
 
               if (!postListRef.current.some((post) => post.id === newPost[0])) {
                 newPost = {
-                  ...newPost[1],
-                  authorpfp: newPost[2],
-                  id: newPost[0],
+                  ...newPost.postData,
+                  authorpfp: newPost.authorProfilePicture,
+                  id: newPost.postId,
                 };
                 newPosts.push(newPost);
                 postListRef.current.push(newPost);
@@ -149,7 +157,7 @@ const HomePageComponent = () => {
 
   const deletePostById = async (postId) => {
     try {
-      await deletePost(postId); // Assuming this function deletes the post from the database
+      await deletePost(postId, currentUser.id ? currentUser.id : currentUser.ID); // Assuming this function deletes the post from the database
       setPostList((prevPosts) => prevPosts.filter(post => post.id !== postId));
       console.log(`Post with id ${postId} has been deleted`);
     } catch (error) {

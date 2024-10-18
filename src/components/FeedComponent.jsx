@@ -8,11 +8,11 @@ const Feed = ({ postList, handleDeletePost }) => {
   const {currentUser} = useAuth(); 
 
   const handleLike = (postId) => {
-    toggleLike(postId, currentUser.id); 
+    toggleLike(postId, currentUser.id, currentUser.username); 
   }
 
   const handleComment = (postId, comment) => {
-    addComment(postId, currentUser.username)
+    addComment(postId, currentUser.username, currentUser.id, comment)
     console.log('this will handle a post comment');
   };
 
@@ -24,8 +24,8 @@ const Feed = ({ postList, handleDeletePost }) => {
           postID = {post.id}
           author={post.author}
           caption={post.caption}
-          likes={post.likes}
-          timestamp={post.timestamp}
+          likes={post.likesCount ? post.likesCount : 0}
+          timestamp={post.timestamp ? post.timestamp : post.createdAt.seconds } 
           authorpfp={post.authorpfp}
           onLike={() => handleLike(post.id)}
           photourlArray={post.photoUrls}

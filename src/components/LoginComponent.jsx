@@ -6,7 +6,7 @@ import Logo from "../assets/cross1.png";
 import { Link, useNavigate } from "react-router-dom";
 import { LoginAPI } from "../api/AuthAPI";
 import { useAuth } from "../userContext";
-import { findUserWEmail } from "../api/DataBaseAPI";
+import {  findUserByEmail  } from "../api/DataBaseAPI";
 
 export default function LoginComponent() {
   const { setCurrentUser } = useAuth();
@@ -20,7 +20,7 @@ export default function LoginComponent() {
         usrCredentials.email,
         usrCredentials.password
       );
-      const UserInfo = await findUserWEmail(usrCredentials.email); // returns [userId, UserInfo]
+      const UserInfo = await findUserByEmail(usrCredentials.email); // returns [userId, UserInfo]
 
       if (response !== false) {
         const loggedInUser = {

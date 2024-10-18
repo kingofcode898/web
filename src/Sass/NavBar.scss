@@ -5,13 +5,13 @@
   background-color: #ffffff;
   color: #000; /* Changed to black for text readability */
   padding: 10px;
-  width: clamp(50px, 10%, 100px);
+  width: 70px;
   height: 100vh;
   margin: 0;
   border-right: 1px solid rgb(219, 219, 219);
   position: fixed;
   left: 0;
-  z-index: 5;
+  z-index: 100;
 }
 
 .navItem {
@@ -54,7 +54,7 @@ display: block;
 
 
 
-@media (max-width: 680px) {
+@media (max-width: 768px) {
   .navbar {
     width: 100%;
     height: 50px;

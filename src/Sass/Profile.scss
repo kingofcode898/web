@@ -4,8 +4,8 @@
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: max(800px, 70%);
+  margin-left: 120px;
   color: #333;
   font-family: Arial, sans-serif;
 }
@@ -18,6 +18,7 @@
   border-bottom: 1px solid #dbdbdb;
   padding-bottom: 20px;
   position: relative;
+  flex-wrap: wrap;
 
   .profile-picture {
     width: 150px;
@@ -53,67 +54,151 @@
       margin-bottom: 10px;
     }
 
-    .profile-actions,
     .bio-input-container {
       display: flex;
-      gap: 10px;
       flex-direction: column;
       margin-top: 10px;
+
+      .bio-input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .bio-buttons {
+        display: flex;
+        gap: 10px;
+
+        .save-bio-bttn,
+        .cancel-bio-bttn {
+          padding: 8px 12px;
+          border: none;
+          border-radius: 4px;
+          font-size: 14px;
+          cursor: pointer;
+          width: fit-content;
+        }
+
+        .save-bio-bttn {
+          background-color: #0095f6;
+          color: #fff;
+        }
+
+        .cancel-bio-bttn {
+          background-color: #f0f0f0;
+          color: #333;
+
+          &:hover {
+            background-color: #e0e0e0;
+            cursor: pointer;
+          }
+        }
+      }
     }
 
-    .upload-input,
-    .bio-input {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
-    }
+    .profile-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
 
-    .upload-message {
-      font-size: 12px;
-      color: green;
-    }
+      .upload-input-container {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
 
-    .save-bio-bttn {
-      height: 32px;
-      width: 70px;
+        .upload-button {
+          background-color: #0095f6;
+          color: #fff;
+          padding: 8px 12px;
+          font-size: 14px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+
+          &:hover {
+            background-color: #007bbf;
+          }
+        }
+
+        .upload-input {
+          font-size: 100px;
+          position: absolute;
+          left: 0;
+          top: 0;
+          opacity: 0;
+          cursor: pointer;
+        }
+      }
+
+      .upload-message {
+        font-size: 12px;
+        color: green;
+        margin-top: 5px;
+      }
+
+      .cancel-upload-bttn {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        background-color: #f0f0f0;
+        color: #333;
+        width: fit-content;
+
+        &:hover {
+          background-color: #e0e0e0;
+          cursor: pointer;
+        }
+      }
     }
   }
 }
 
-.three-dot-menu,
-.dropdown-menu {
+.three-dot-menu {
   position: absolute;
   top: 10px;
   right: 10px;
-  border-radius: 8px;
-  transition: background-color 0.3s;
-}
 
-.three-dot-button,
-.dropdown-menu button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  text-align: left;
-  width: 100%;
-  padding: 8px;
-}
+  .three-dot-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    padding: 0;
+  }
 
-.dropdown-menu {
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  overflow: hidden;
-}
+  .dropdown-menu {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow: hidden;
+    width: 200px;
 
-.dropdown-menu button:hover,
-.three-dot-menu:hover {
-  background: #f0f0f0;
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      text-align: left;
+      width: 100%;
+      padding: 10px;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background: #f0f0f0;
+      }
+    }
+  }
 }
 
 /* Profile Content */
@@ -172,16 +257,126 @@
     }
   }
 }
+/* Add these styles to your existing Profile.scss */
 
+/* Follow List Overlay */
+.follow-list-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.follow-list-container {
+  background: #fff;
+  width: 90%;
+  max-width: 700px; 
+  min-height: min(80%, 800px );  
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.follow-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #fafafa;
+  border-bottom: 1px solid #dbdbdb;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #262626;
+  }
+
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+
+    &:hover {
+      color: #555;
+    }
+  }
+}
+
+.follow-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+
+  .follow-list-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #efefef;
+
+    &:hover {
+      background-color: #fafafa;
+    }
+
+    .follow-list-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+
+    .follow-list-username {
+      font-size: 16px;
+      color: #262626;
+    }
+  }
+
+  .no-users {
+    text-align: center;
+    padding: 20px;
+    color: #999;
+  }
+}
 /* Media Queries */
 @media (max-width: 768px) {
+  .profile-page {
+    margin-left: 0;
+  }
+
   .profile-header {
     flex-direction: column;
     text-align: center;
+
     .profile-picture {
       margin: 0 0 15px;
     }
+
+    .three-dot-menu {
+      top: 5px;
+      right: 5px;
+    }
+
+    .dropdown-menu {
+      width: 150px;
+    }
   }
+
+  .profile-details {
+    .stats {
+      justify-content: center;
+    }
+  }
+
   .posts-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -190,5 +385,9 @@
 @media (max-width: 480px) {
   .posts-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dropdown-menu {
+    width: 120px;
   }
 }

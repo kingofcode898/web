@@ -1,0 +1,135 @@
+/* User Profile Styles */
+.user-profile-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    max-width: max(800px, 70%);
+    margin-left: 120px;
+    color: #333;
+    font-family: Arial, sans-serif;
+  }
+  
+  .user-profile-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #dbdbdb;
+    padding-bottom: 20px;
+    position: relative;
+  
+    .user-profile-picture {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 20px;
+      border: 2px solid #ddd;
+    }
+  
+    .user-profile-details {
+      flex-grow: 1;
+  
+      .user-username {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #262626;
+      }
+  
+      .user-stats {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        color: #8e8e8e;
+        margin-bottom: 10px;
+      }
+  
+      .user-bio {
+        font-size: 14px;
+        color: #333;
+        line-height: 1.4;
+        margin-bottom: 10px;
+      }
+  
+      .user-follow-button {
+        padding: 8px 16px;
+        background-color: #0095f6;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;
+  
+        &:hover {
+          background-color: #007bb5;
+        }
+  
+        &.followed {
+          background-color: #8e8e8e;
+  
+          &:hover {
+            background-color: #6e6e6e;
+          }
+        }
+      }
+    }
+  }
+  
+  /* User Profile Content */
+  .user-profile-content {
+    width: 100%;
+  
+    h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #262626;
+    }
+  
+    .user-posts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+  
+      .user-post-item {
+        background-color: #fafafa;
+        border: 1px solid #dbdbdb;
+        border-radius: 4px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        aspect-ratio: 1;
+  
+        &:hover {
+          transform: scale(1.05);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
+  
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .user-profile-header {
+      flex-direction: column;
+      text-align: center;
+  
+      .user-profile-picture {
+        margin: 0 0 15px;
+      }
+    }
+  
+    .user-posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  
+    .user-profile-page {
+      margin: 0 auto;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .user-posts-grid {
+      grid-template-columns: 1fr;
+    }
+  }

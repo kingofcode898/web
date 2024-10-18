@@ -1,298 +1,282 @@
-import { addDoc, collection, getDoc, doc, query, where, getDocs, updateDoc, deleteDoc, orderBy, limit } from "firebase/firestore";
-import { firestore, storage} from "../firebaseConfig";
-import { getStorage, ref, uploadBytesResumable,getDownloadURL ,deleteObject} from "firebase/storage";
-import Post from "../components/postComponent";
-import { Timestamp } from "firebase/firestore";
-
+import {
+  addDoc,
+  collection,
+  getDoc,
+  doc,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  orderBy,
+  limit,
+  increment,
+  Timestamp,
+  setDoc,
+} from "firebase/firestore";
+import { firestore, storage } from "../firebaseConfig";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+const bcrypt = require('bcrypt');
 
 const userCollection = collection(firestore, "Users");
-const postCollection = collection(firestore, "Posts")
+const postCollection = collection(firestore, "Posts");
 
-// Adds user to the database
+// Adds a user to the database with secure password handling
 export const addUserDb = async (username, email, password) => {
   try {
-    const newUser = await addDoc(userCollection, {
-      username: username,
-      email: email,
-      password: password,
+    // Hash the password before storing (you'll need to implement hashPassword)
+    const hashedPassword = await hashPassword(password);
+
+    const newUserRef = doc(userCollection);
+    await setDoc(newUserRef, {
+      username,
+      email,
+      password: hashedPassword,
       num_followers: 0,
       followers: [],
-      num_following: 0, 
+      num_following: 0,
       following: [],
-      posts_created: 0
+      posts_created: 0,
+      profilePictureUrl: "",
+      bio: "",
+      createdAt: Timestamp.now(),
     });
-    doc(firestore, newUser.path)
-    console.log("user succesfully added to firestore database!");
-    return newUser;
 
+    console.log("User successfully added to Firestore database!");
+    return newUserRef;
   } catch (error) {
     console.error("Error adding user to database:", error);
     throw error;
   }
 };
 
-/*This will be the function that allows a user to follow*/
-export const addFollow = async (currrentUsername, FollowUsername) => {
+// Function that allows a user to follow another user
+export const addFollow = async (currentUsername, followUsername) => {
   try {
-    // Find the main user and the user to be followed
-    const currentUserInfo = await findUserWUsername(currrentUsername);
-    const UserToBeFollowed = await findUserWUsername(FollowUsername); // aka UTBF
+    // Find the current user and the user to be followed
+    const [currentUserId, currentUserData] = await findUserByUsername(currentUsername);
+    const [followUserId, followUserData] = await findUserByUsername(followUsername);
 
-    // Paths to user documents
-    const currentUserPath = "Users/" + currentUserInfo[0];
-    const UTBFPath = "Users/" + UserToBeFollowed[0];
+    if (!currentUserId || !followUserId) {
+      throw new Error("User not found.");
+    }
 
-    // References to Firestore documents
-    const currentUserRef = doc(firestore, currentUserPath);
-    const UTBFRef = doc(firestore, UTBFPath);
+    // Update following for the current user
+    const currentUserRef = doc(firestore, `Users/${currentUserId}`);
+    await updateDoc(currentUserRef, {
+      num_following: increment(1),
+      following: [...currentUserData.following, followUserId],
+    });
 
-    // Update following information for the current user
-    const new_num_following = currentUserInfo[1].num_following + 1;
-    const new_following = [...currentUserInfo[1].following, FollowUsername];
+    // Update followers for the user to be followed
+    const followUserRef = doc(firestore, `Users/${followUserId}`);
+    await updateDoc(followUserRef, {
+      num_followers: increment(1),
+      followers: [...followUserData.followers, currentUserId],
+    });
 
-    // Update followers information for the user to be followed
-    const new_num_followers = UserToBeFollowed[1].num_followers + 1;
-    const new_followers = [...UserToBeFollowed[1].followers, currrentUsername];
-
-    // Perform updates in Firestore
-    await updateDoc(currentUserRef, { following: new_following, num_following: new_num_following });
-    await updateDoc(UTBFRef, { followers: new_followers, num_followers: new_num_followers });
-
-    console.log(`${currrentUsername} is now following ${FollowUsername}`);
-
+    console.log(`${currentUsername} is now following ${followUsername}`);
   } catch (error) {
-    console.error("Error in the follow process: ", error.message);
+    console.error("Error in the follow process:", error.message);
     throw error;
   }
 };
 
-/*function that is called when a user logs in. It finds the document that has the same 
-  the same email as the provided one in the login */
-  export const findUserWEmail = async (email) => {
-    try {
-      // Finds the document where the email matches the credential email
-      const q = query(
-        collection(firestore, "Users"),
-        where("email", "==", email)
-      );
-  
-      const userDocs = await getDocs(q);
-  
-      if (!userDocs.empty) {
-        // Since querying by email make it so that just the firts one is the one
-        const userDoc = userDocs.docs[0];
-        return [userDoc.id, userDoc.data()];
-      } else {
-        console.log("No matching document found.");
-        return null;
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // Finds the document where the username matches the given username
-  export const findUserWUsername = async (username) => {
-    try {
-      
-      const q = query(
-        collection(firestore, "Users"),
-        where("username", "==", username)
-      );
-  
-      const userDocs = await getDocs(q);
-  
-      if (!userDocs.empty) {
-        const userDoc = userDocs.docs[0];
-        return [userDoc.id, userDoc.data()];
-      } else {
-        console.log("Couldn't find that user");
-        return null;
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  
- /**
- * This function takes in the user ID, caption, and an array of URLs that point to the photo content of the post.
- *
- * @param {string} userID - The ID of the user creating the post.
- * @param {string} caption - The caption for the post.
- * @param {Array<string>} photo_urls - An array of URLs pointing to the photo content of the post.
- * @returns {Promise<string|undefined>} The ID of the created post, or undefined if an error occurs.
- */
-export const createPostinDB = async (userID, caption, photo_urls,authorUsername) => {
+// Function called when a user logs in, finds the user by email
+export const findUserByEmail = async (email) => {
   try {
-    const userRef = doc(firestore, "Users/" + userID);
-    
-    // Get the user's current data
-    const userSnapshot = await getDoc(userRef);
-    const userData = userSnapshot.data();
-    
-    const newPost = {
-        userId: userID,
-        caption: caption,
-        photoUrls: photo_urls,
-        likes: 0,
-        commentsCount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        num_key: (userData.posts_created || 0) + 1, 
-        author:authorUsername
-      };
-      // Increment the user's post count
-      await updateDoc(userRef, {
-        posts_created: (userData.posts_created || 0) + 1
-      });
-    
+    const q = query(userCollection, where("email", "==", email));
+    const userDocs = await getDocs(q);
 
-    
-    let result = await addDoc(postCollection, newPost);
-
-    console.log('Post created and user post count updated successfully!');
-    return result.id;
+    if (!userDocs.empty) {
+      const userDoc = userDocs.docs[0];
+      return [userDoc.id, userDoc.data()];
+    } else {
+      console.log("No matching user found.");
+      return null;
+    }
   } catch (error) {
-    console.error('Error creating post or updating user post count:', error);
+    console.error("Error finding user by email:", error);
+    throw error;
   }
 };
-  export const uploadPostPicture = async (filename, file) => {
-    const storage = getStorage();
-  
-    // Add more file types if needed
-    const metadata = {
-      contentType: file.type // Dynamically set the content type based on the uploaded file
+
+// Finds the user by username
+export const findUserByUsername = async (username) => {
+  try {
+    const q = query(userCollection, where("username", "==", username));
+    const userDocs = await getDocs(q);
+
+    if (!userDocs.empty) {
+      const userDoc = userDocs.docs[0];
+      return [userDoc.id, userDoc.data()];
+    } else {
+      console.log("User not found.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error finding user by username:", error);
+    throw error;
+  }
+};
+
+// Creates a new post in the database
+export const createPostInDB = async (userId, caption, photoUrls, authorUsername) => {
+  try {
+    const userRef = doc(firestore, `Users/${userId}`);
+    const userSnapshot = await getDoc(userRef);
+
+    if (!userSnapshot.exists()) {
+      throw new Error("User not found.");
+    }
+
+    const userData = userSnapshot.data();
+    const newPostRef = doc(postCollection);
+    const newPost = {
+      userId,
+      caption,
+      photoUrls,
+      likesCount: 0,
+      commentsCount: 0,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      num_key: (userData.posts_created || 0) + 1,
+      author: authorUsername,
     };
-  
-    // Set the path for storing the image in the 'PostPhotos' folder
+
+    await setDoc(newPostRef, newPost);
+
+    // Increment the user's post count
+    await updateDoc(userRef, {
+      posts_created: increment(1),
+    });
+
+    console.log("Post created and user post count updated successfully!");
+    return newPostRef.id;
+  } catch (error) {
+    console.error("Error creating post or updating user post count:", error);
+    throw error;
+  }
+};
+
+// Uploads a picture for a post
+export const uploadPostPicture = async (filename, file) => {
+  try {
     const storageRef = ref(storage, `PostPhotos/${filename}`);
-    const uploadTask = uploadBytesResumable(storageRef, file, metadata);
-  
-    return new Promise((resolve, reject) => {
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    return await new Promise((resolve, reject) => {
       uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log(`Upload is ${progress}% done`);
-          switch (snapshot.state) {
-            case 'paused':
-              console.log('Upload is paused');
-              break;
-            case 'running':
-              console.log('Upload is running');
-              break;
-          }
-        },
+        "state_changed",
+        null,
         (error) => {
-          console.error('Error during upload:', error);
+          console.error("Error during upload:", error);
           reject(error);
         },
         async () => {
-          try {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            console.log('File available at', downloadURL);
-            resolve(downloadURL);  // Resolve with the download URL
-          } catch (error) {
-            console.error('Error getting download URL:', error);
-            reject(error);
-          }
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log("File available at", downloadURL);
+          resolve(downloadURL);
         }
       );
     });
-  };
-
-export const addComment = async (postId, userId, content) => {
-  try {
-    // Reference to the comments collection
-    const commentsRef = firestore.collection('comments');
-
-    // Create a new comment document with an auto-generated ID
-    const newComment = {
-      postId: postId,           
-      userId: userId,           
-      content: content,         
-      likes: 0,                 
-      createdAt: new Date(),    
-      updatedAt: new Date()    
-    };
-
-    // Add the comment to the collection
-    await commentsRef.add(newComment);
-    
-    // Optionally, you could update the comment count in the post document
-    const postRef = firestore.collection('posts').doc(postId);
-    await postRef.update({
-      commentsCount: firestore.FieldValue.increment(1)
-    });
-
-    console.log('Comment added successfully!');
   } catch (error) {
-    console.error('Error adding comment:', error);
+    console.error("Error uploading post picture:", error);
+    throw error;
   }
 };
 
-export const deletePost = async (postID,userId) => {
+// Adds a comment to a post
+export const addComment = async (postId, authorName , userId, content) => {
   try {
-    const postPath = `Posts/${postID}`;
-    const postDocRef = doc(firestore, postPath);
+    const commentRef = doc(collection(firestore, "Comments"));
+    const newComment = {
+      postId,
+      authorName, 
+      userId, 
+      content,
+      likesCount: 0,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
 
-    const userDoc= doc(firestore, `Users/${user}`)
-    
-    // Get the post document
-    const postSnapshot = await getDoc(postDocRef);
-    
+    await setDoc(commentRef, newComment);
+
+    // Update the comment count in the post document
+    const postRef = doc(firestore, `Posts/${postId}`);
+    await updateDoc(postRef, {
+      commentsCount: increment(1),
+    });
+
+    console.log("Comment added successfully!");
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    throw error;
+  }
+};
+
+// Deletes a post and associated photos
+export const deletePost = async (postId, userId) => {
+  try {
+    const postRef = doc(firestore, `Posts/${postId}`);
+    const postSnapshot = await getDoc(postRef);
+
     if (!postSnapshot.exists()) {
       throw new Error("Post not found.");
     }
 
     const postData = postSnapshot.data();
-    const photoUrls = postData.photoUrls; // Assuming 'photos' is the array of URLs
+    const photoUrls = postData.photoUrls;
 
-    const getStoragePathFromUrl = (url) => {
-      const startIndex = url.indexOf("/o/") + 3;
-      const endIndex = url.indexOf("?alt=");
-      return decodeURIComponent(url.substring(startIndex, endIndex));
-    };
-
-    
+    // Delete photos from storage
     const deletePhotoPromises = photoUrls.map(async (url) => {
-      const storagePath = getStoragePathFromUrl(url); // Extract the storage path
-      const photoRef = ref(storage, storagePath); // Get the reference to the file
-      await deleteObject(photoRef).then(() => {
-        console.log("Photo deleted: " + storagePath)
-      }).catch((error) =>{
-        console.log("Error deleting the photo" + error)
-      }); // Delete the file
+      const photoRef = ref(storage, url);
+      await deleteObject(photoRef);
     });
 
-    // Wait for all photos to be deleted
     await Promise.all(deletePhotoPromises);
 
-    // Now delete the post document
-    await deleteDoc(postDocRef);
+    // Delete the post document
+    await deleteDoc(postRef);
 
-  
+    // Decrement the user's post count
+    const userRef = doc(firestore, `Users/${userId}`);
+    await updateDoc(userRef, {
+      posts_created: increment(-1),
+    });
 
     console.log("Post and associated photos successfully deleted.");
   } catch (error) {
     console.error("Error deleting post or photos:", error);
+    throw error;
   }
 };
 
+/**
+ * 
+ * @param {String } authorUsername 
+ * @param {Timestamp} timestamp 
+ * @returns object {postId , postData, authoProfilepic}
+ */
 export const getPost = async (authorUsername, timestamp) => {
   try {
-    const authorInfo = await findUserWUsername(authorUsername);
-    const authorpfp = authorInfo[1].profilePictureUrl;
+    const [authorId, authorData] = await findUserByUsername(authorUsername);
 
-    const timestampFirestore = Timestamp.fromMillis(timestamp)
-
-    console.log(timestampFirestore)
+    if (!authorId) {
+      throw new Error("Author not found.");
+    }
 
     const q = query(
-      collection(firestore, "Posts"),
+      postCollection,
       where("author", "==", authorUsername),
-      where("createdAt", "<=",timestampFirestore ), // Ensure timestamp is a Date object
-      orderBy("createdAt", "desc"), // Order by timestamp descending
+      where("createdAt", "<=", Timestamp.fromMillis(timestamp)),
+      orderBy("createdAt", "desc"),
       limit(1)
     );
 
@@ -300,31 +284,31 @@ export const getPost = async (authorUsername, timestamp) => {
 
     if (!result.empty) {
       const postDoc = result.docs[0];
-      return [postDoc.id, postDoc.data(), authorpfp];
+      return {
+        postId: postDoc.id,
+        postData: postDoc.data(),
+        authorProfilePicture: authorData.profilePictureUrl,
+      };
     } else {
-      console.log('No post found before the given timestamp for the author.');
-      return undefined;
+      console.log("No post found before the given timestamp for the author.");
+      return null;
     }
-
   } catch (error) {
-    console.error('Error getting post:', error.message);
+    console.error("Error getting post:", error.message);
     throw error;
   }
 };
 
-export const getUserPosts = async (userID) => {
+// Retrieves all posts made by a user
+export const getUserPosts = async (userId) => {
   try {
-    // Create a query to get posts where the userId matches
     const q = query(
-      collection(firestore, "Posts"),
-      where("userId", "==", userID), // Ensure this matches the field name exactly
-      orderBy("createdAt", "desc")   // Order posts by creation date in descending order
+      postCollection,
+      where("userId", "==", userId),
+      orderBy("createdAt", "desc")
     );
 
-    // Execute the query
     const querySnapshot = await getDocs(q);
-
-    // Map through the documents and collect the data into an array
     const posts = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -332,118 +316,157 @@ export const getUserPosts = async (userID) => {
 
     return posts;
   } catch (error) {
-    console.error('Error getting user posts: ', error);
+    console.error("Error getting user posts:", error);
     throw error;
   }
 };
-/**
- * Toggles the like status of a post for a given user. If the user has already liked the post,
- * it will remove the like (unlike). If the user has not liked the post yet, it will add a like.
- * 
- * The function performs the following actions:
- * 1. Checks whether the user has already liked the post by querying the `Likes` collection.
- * 2. If the user has liked the post, it removes the like and decrements the post's like count.
- * 3. If the user has not liked the post, it adds a new like entry and increments the post's like count.
- * 
- * @param {string} postID - The unique identifier of the post being liked/unliked.
- * @param {string} userID - The unique identifier of the user performing the like/unlike action.
- * 
- * @throws Will throw an error if there is an issue accessing the database or updating records.
- * 
- * @example
- * // Example usage:
- * toggleLike("12345", "user_abc")
- *   .then(() => console.log("Like toggled successfully"))
- *   .catch((error) => console.error("Error toggling like:", error));
- * 
- * @returns {Promise<void>} A promise that resolves when the like/unlike operation is complete.
- */
-export const toggleLike = async (postID, userID) => {
-  try {
-    const likesDocRef = doc(firestore, `Likes/${postID}_${userID}`); // Use a composite ID for like tracking
-    const postDocRef = doc(firestore, `Posts/${postID}`);
 
-    const likeSnapshot = await getDoc(likesDocRef);
-    
+// Toggles the like status of a post for a given user
+export const toggleLike = async (postId, userId, username) => {
+  try {
+    const likeDocRef = doc(firestore, `Likes/${postId}_${userId}`);
+    const postRef = doc(firestore, `Posts/${postId}`);
+    const likeSnapshot = await getDoc(likeDocRef);
+
     if (likeSnapshot.exists()) {
-      // User has already liked the post, so we unlike it
-      await deleteDoc(likesDocRef); // Remove like record
-      await updateDoc(postDocRef, {
-        likesCount: increment(-1)  // Decrease like count
+      // User has already liked the post; remove the like
+      await deleteDoc(likeDocRef);
+      await updateDoc(postRef, {
+        likesCount: increment(-1),
       });
       console.log("Post unliked.");
     } else {
-      // User has not liked the post, so we like it
-      await re(likesDocRef, {
-        userID: userID,
-        postID: postID,
-        timestamp: new Date().toISOString()
+      // User has not liked the post; add a like
+      await setDoc(likeDocRef, {
+        userId,
+        username,
+        postId,
+        timestamp: Timestamp.now(),
       });
-      await updateDoc(postDocRef, {
-        likesCount: increment(1)  // Increase like count
+      await updateDoc(postRef, {
+        likesCount: increment(1),
       });
       console.log("Post liked.");
     }
   } catch (error) {
     console.error("Error toggling like:", error);
+    throw error;
   }
 };
 
-export const updateUserBio = (userID, newBio) => {
-  const userRef = doc(firestore, 'Users/'+ userID)
-
-  updateDoc(userRef, {bio : newBio})
-}
-
-/*this function recieves a photo and uploads it to the database where when
-the user logs in again it will be there profile picture */
-export const uploadProfilePicture = async (filename, file, userDocPath) => {
-  const storage = getStorage();
-
-  //add more file tyypes
-
-  const metadata = {
-    contentType: 'image/jpg'
-  };
-  
-  const storageRef = ref(storage, 'UserProfilePictures/' + filename);
-  const uploadTask = uploadBytesResumable(storageRef, file, metadata);
-  
-  return new Promise((resolve, reject) => {
-    uploadTask.on('state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
-        switch (snapshot.state) {
-          case 'paused':
-            console.log('Upload is paused');
-            break;
-          case 'running':
-            console.log('Upload is running');
-            break;
-        }
-      }, 
-      (error) => {
-        console.error('Error during upload:', error);
-        reject(error);
-      }, 
-      async () => {
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          console.log('File available at', downloadURL);
-
-          let userPath = "Users/" + userDocPath;
-          const userRef = doc(firestore, userPath);
-          await updateDoc(userRef, { profilePictureUrl: downloadURL });
-
-          console.log('Profile picture URL saved to Firestore');
-          resolve(downloadURL);  // Resolve with the download URL
-        } catch (error) {
-          console.error('Error saving profile picture URL:', error);
-          reject(error);
-        }
-      }
-    );
-  });
+// Updates the user's bio
+export const updateUserBio = async (userId, newBio) => {
+  try {
+    const userRef = doc(firestore, `Users/${userId}`);
+    await updateDoc(userRef, { bio: newBio });
+    console.log("User bio updated successfully.");
+  } catch (error) {
+    console.error("Error updating user bio:", error);
+    throw error;
+  }
 };
 
+// Uploads a profile picture and updates the user's profile picture URL
+export const uploadProfilePicture = async (filename, file, userId) => {
+  try {
+    const storageRef = ref(storage, `UserProfilePictures/${filename}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    const downloadURL = await new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        null,
+        (error) => {
+          console.error("Error during upload:", error);
+          reject(error);
+        },
+        async () => {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log("File available at", url);
+          resolve(url);
+        }
+      );
+    });
+
+    const userRef = doc(firestore, `Users/${userId}`);
+    await updateDoc(userRef, { profilePictureUrl: downloadURL });
+
+    console.log("Profile picture URL saved to Firestore");
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    throw error;
+  }
+};
+
+
+
+
+const hashPassword = async (password) => {
+  const saltRounds = 10;
+  try {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    return hashedPassword;
+  } catch (error) {
+    console.error('Error hashing password:', error);
+    throw error;
+  }
+};
+
+const comparePasswords = async (plainPassword, hashedPassword) => {
+  try {
+    const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
+    return isMatch;
+  } catch (error) {
+    console.error('Error comparing passwords:', error);
+    throw error;
+  }
+};
+
+module.exports = { hashPassword, comparePasswords };
+export const getPostComments = async (postId) => {
+  try {
+    const q = query(
+      postCollection,
+      where("postId", "==", postId),
+      orderBy("createdAt", "desc")
+    );
+
+    const querySnapshot = await getDocs(q);
+    const comments = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return comments;
+  } catch (error) {
+    console.error("Error getting user posts:", error);
+    throw error;
+  }
+};
+
+export const getUsersByIds = async (ids) => {
+  if (!ids || ids.length === 0) {
+    return [];
+  }
+
+  const usersRef = collection(firestore, 'Users');
+  const users = [];
+
+  // Firestore 'in' queries can handle up to 10 items at a time
+  const chunkSize = 10;
+  for (let i = 0; i < ids.length; i += chunkSize) {
+    const chunk = ids.slice(i, i + chunkSize);
+    const q = query(usersRef, where('username', 'in', chunk));
+    try {
+      const querySnapshot = await getDocs(q);
+      const chunkUsers = querySnapshot.docs.map((doc) => doc.data());
+      users.push(...chunkUsers);
+    } catch (error) {
+      console.error('Error fetching users by IDs:', error);
+      throw error;
+    }
+  }
+
+  return users;
+};
